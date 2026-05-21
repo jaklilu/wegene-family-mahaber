@@ -1,79 +1,21 @@
 const STORAGE_KEY = 'wegene-tracker-mvp-v3';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CONFIG = window.WEGENE_CONFIG || {};
+const AUTH = window.WegeneAuth;
 
 const $ = (id) => document.getElementById(id);
 
-function isCorrectPassword(text) {
-  return text.trim() === (CONFIG.memberPassword || 'Wegene2026!');
-}
-
-function readSessionFlag() {
-  try {
-    return sessionStorage.getItem(CONFIG.sessionStorageKey || 'wegene-member-session-v1');
-  } catch (_) {
-    return null;
-  }
-}
-
-function writeSessionFlag() {
-  try {
-    sessionStorage.setItem(CONFIG.sessionStorageKey || 'wegene-member-session-v1', 'ok');
-  } catch (_) {
-    localStorage.setItem(CONFIG.sessionStorageKey || 'wegene-member-session-v1', 'ok');
-  }
-}
-
-function clearSessionFlag() {
-  try { sessionStorage.removeItem(CONFIG.sessionStorageKey || 'wegene-member-session-v1'); } catch (_) {}
-  try { localStorage.removeItem(CONFIG.sessionStorageKey || 'wegene-member-session-v1'); } catch (_) {}
-}
-
-function isLoggedIn() {
-  return readSessionFlag() === 'ok' || localStorage.getItem(CONFIG.sessionStorageKey || 'wegene-member-session-v1') === 'ok';
-}
-
-function showApp() {
-  document.body.classList.add('is-authenticated');
-  const login = $('login-screen');
-  if (login) login.remove();
-  $('app-shell').hidden = false;
-}
-
-function showLogin() {
-  document.body.classList.remove('is-authenticated');
-  const shell = $('app-shell');
-  if (shell) shell.hidden = true;
-}
-
-function unlockIfPasswordMatches() {
-  const entered = $('member-password').value;
-  if (isCorrectPassword(entered)) {
-    writeSessionFlag();
-    $('member-password').value = '';
-    $('login-error').hidden = true;
-    showApp();
-    return true;
-  }
-  $('login-error').hidden = false;
-  return false;
-}
-
 async function setupLoginGate() {
-  if (isLoggedIn()) {
-    showApp();
-    return true;
-  }
-  showLogin();
-  window.unlockWegeneTracker = unlockIfPasswordMatches;
-  $('login-button').addEventListener('click', unlockIfPasswordMatches);
-  $('member-password').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      unlockIfPasswordMatches();
-    }
+  if (!AUTH) throw new Error('WegeneAuth failed to load');
+  return AUTH.requireGate({
+    mode: 'member',
+    loginScreenId: 'login-screen',
+    appShellId: 'app-shell',
+    passwordInputId: 'member-password',
+    loginButtonId: 'login-button',
+    errorId: 'login-error',
+    unlockName: 'unlockWegeneTracker'
   });
-  return false;
 }
 
 async function loadSeedData() {
@@ -243,7 +185,8 @@ function render(data) {
     $('pass-button').addEventListener('click', () => passCurrentMember(data));
   }
 
-  $('member-table').innerHTML = sortedActiveMembers(data).map(member => {
+  const activeMembers = sortedActiveMembers(data);
+  $('member-table').innerHTML = activeMembers.map(member => {
     const status = computeMemberStatus(data, member);
     const date = data.state.scheduled?.memberId === member.id ? data.state.scheduled.date : (data.history.find(h => h.memberId === member.id && h.round === data.state.round)?.hostingDate || '—');
     return `<tr class="${member.id === data.state.currentMemberId ? 'current' : ''}">
@@ -254,12 +197,20 @@ function render(data) {
     </tr>`;
   }).join('');
 
+  const callList = $('member-call-list');
+  if (callList) {
+    callList.innerHTML = activeMembers.map(member => {
+      const phone = member.phone && member.phone !== '(private)' ? member.phone : 'Phone pending approved data';
+      return `<li><strong>${member.name}</strong><span>${phone}</span></li>`;
+    }).join('');
+  }
+
 }
 
 async function boot() {
   const loginReady = await setupLoginGate();
   $('logout-button').addEventListener('click', () => {
-    clearSessionFlag();
+    AUTH.clearSession('member');
     location.reload();
   });
   const seed = await loadSeedData();

@@ -14,7 +14,7 @@
       <p>Member-only hosting tracker. Enter the shared member password to continue.</p>
       <label for="member-password">Shared member password</label>
       <input type="password" id="member-password" autocomplete="current-password" />
-      <button type="button" id="login-button" onclick="window.unlockWegeneTracker && window.unlockWegeneTracker()">Enter tracker</button>
+      <button type="button" id="login-button">Enter tracker</button>
       <p class="error" id="login-error" hidden>Incorrect password. Please try again.</p>
     </div>
   </section>
@@ -25,8 +25,7 @@
     <h1>Wegene Family Mahaber Tracker</h1>
     <nav>
       <a href="index.html">Tracker</a>
-      <a href="admin.html">Admin mock</a>
-      <a href="telegram-reminders.md">Telegram notes</a>
+      <a href="admin.html">Admin tools</a>
       <button class="ghost small" id="logout-button" type="button">Log out</button>
     </nav>
   </header>
@@ -63,14 +62,21 @@
           <li>Host date must be at least <strong>21 days from today</strong>.</li>
           <li>If they pass, the main tracker labels them <strong>Passed</strong>.</li>
           <li>Once someone hosts, they move to the bottom of the rotation list.</li>
-          <li>The next person in the list becomes <strong>Get Ready</strong>.</li>
+          <li>The pass queue gets priority after a hosting is completed.</li>
+          <li>The next person becomes <strong>Get Ready</strong>.</li>
         </ol>
+      </div>
+      <div class="card">
+        <h2>Member call list status</h2>
+        <p>This protected MVP shell is ready for member phone numbers, but no real call-list data has been added yet.</p>
+        <ul id="member-call-list" class="compact-list"></ul>
       </div>
     </section>
   </main>
 
   </div>
   <script src="assets/config.js"></script>
+  <script src="assets/auth.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>

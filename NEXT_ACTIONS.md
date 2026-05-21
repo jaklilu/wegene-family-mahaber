@@ -2,6 +2,8 @@
 
 ## Immediate
 
+- [ ] Continue Wegene tracker development locally only; do not push to GitHub or trigger Netlify until Jay says to resume.
+- [ ] Next major area when Jay is ready: invoice/payment section.
 - [ ] Get Jay's short description of what Wegene Family Mahaber is.
 - [ ] Identify the first concrete deliverable.
 - [ ] List existing materials: docs, spreadsheets, chats, websites, forms, contacts.
@@ -24,9 +26,9 @@ Need project intake:
 - [x] Create initial member/rotation JSON data.
 - [x] Build first Netlify-ready static tracker prototype.
 - [x] Keep payments as placeholder/link-only until tracker is stable.
-- [ ] Add shared/site-wide member password gate to the MVP shell.
-- [ ] Add member-visible call list view inside the password-protected site.
-- [ ] Keep admin tools behind separate admin protection.
+- [x] Add shared/site-wide member password gate to the MVP shell. (Local demo gate refactored into shared `assets/auth.js` on 2026-05-21.)
+- [ ] Add member-visible call list view inside the password-protected site. (Shell/status view added; real phone data still pending Jay-approved source.)
+- [x] Keep admin tools behind separate admin protection. (Separate local demo admin gate added on 2026-05-21.)
 
 
 ## Tracker Clarification Actions
@@ -60,3 +62,12 @@ Need project intake:
 - [x] Created `tracker-prototype/admin.html` admin mock/protected placeholder.
 - [x] Created `tracker-prototype/telegram-reminders.md` design notes without live integration.
 - [x] Created `tracker-prototype/README.md` local run instructions and pending items.
+
+## 2026-05-21 Local Site Work Status
+
+- Added reusable local demo auth helper: `tracker-prototype/assets/auth.js`.
+- Member tracker now uses the shared member gate through the helper; logout clears member session only.
+- Admin page now has a separate local demo admin gate and clearly states member password does not unlock admin tools.
+- Added protected member call-list status card without inventing phone numbers; real private phone data remains pending approved source.
+- Verified with JS syntax checks and JSON/static smoke checks. No GitHub push or Netlify deploy was performed.
+- Recommended next step: replace client-side demo passwords with deployment-safe Netlify/server-side protection before any production launch.

@@ -82,6 +82,10 @@ h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.75rem); line-height: .98; }
 h2, h3 { margin: 0 0 10px; letter-spacing: -0.02em; }
 p { color: var(--muted); line-height: 1.55; }
 ol, ul { color: var(--muted); line-height: 1.55; padding-left: 1.3rem; }
+.compact-list { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.compact-list li { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); }
+.compact-list li:last-child { border-bottom:0; }
+.compact-list span { color:var(--muted); text-align:right; }
 .badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:7px 11px; font-weight:850; font-size:.84rem; white-space:nowrap; }
 .badge.waiting { background:#edf1ef; color:#4b5a51; }
 .badge.ready { background:#fff1c8; color:#7b5700; }

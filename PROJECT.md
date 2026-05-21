@@ -67,6 +67,7 @@ Recommended future fit:
 
 - Keep payments separate from the first tracker MVP.
 - Later add a `/payments` page that links to PayPal invoices or shows imported/manual payment status.
+- Jay wants to work on the invoice/payment section next time when ready.
 - Avoid PayPal webhook integration until the tracker MVP is stable.
 
 ## Tracker MVP Recommendation
@@ -125,4 +126,5 @@ See `TRACKER_MVP_SPEC.md` for current MVP specification and `MVP_BUILD_PLAN.md` 
 - Pass-list names can be visible to members.
 - Member call list is removed from the member MVP for now.
 - Netlify/GitHub/Gmail project account email: `jakliluopenclaw@gmail.com`.
+- Development mode for now: local-only. Do not push new changes to GitHub or trigger Netlify deploys until Jay says to resume, likely next month.
 - Do not store account password in files or memory. Use credentials only with Jay's explicit approval for login/setup actions.
