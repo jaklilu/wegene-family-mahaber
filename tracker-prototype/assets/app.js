@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v3';
+const STORAGE_KEY = 'wegene-tracker-mvp-v4';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CONFIG = window.WEGENE_CONFIG || {};
 const AUTH = window.WegeneAuth;

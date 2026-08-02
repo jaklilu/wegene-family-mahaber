@@ -1,9 +1,9 @@
 {
-  "currentMemberId": 2,
+  "currentMemberId": 3,
   "round": 1,
   "mainPointerOrder": 1,
   "passQueue": [],
   "scheduled": null,
-  "lastHostedMemberId": 1,
-  "updatedAt": "2026-05-12T14:51:00-07:00"
+  "lastHostedMemberId": 2,
+  "updatedAt": "2026-08-02T14:00:00-07:00"
 }
