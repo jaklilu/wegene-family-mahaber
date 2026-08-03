@@ -147,6 +147,33 @@ body.is-authenticated #admin-shell { display:block !important; }
 .error { color:var(--red); font-weight:850; margin:0; }
 .notice { background:#fff8df; border:1px solid #f0d58b; border-radius:16px; padding:13px; color:#6b4b00; }
 .private { background:#f3f0ff; border-color:#ddd4ff; color:#3d2c7a; }
+.hint { margin: 0 0 12px; color: var(--muted); font-size: .95rem; }
+.admin-actions { margin-top: 4px; }
+.admin-row-actions { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+.admin-table .admin-date,
+.history-row input[type="date"] {
+  width: auto;
+  min-width: 150px;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+.history-row {
+  align-items: center;
+}
+.history-row > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.error-banner {
+  background: #ffe2df;
+  border: 1px solid #f0b4ae;
+  border-radius: 16px;
+  padding: 13px;
+  color: #882821;
+  font-weight: 850;
+}
 pre { white-space: pre-wrap; background:#142018; color:#d9ffe5; border-radius:16px; padding:14px; overflow:auto; }
 footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
 
@@ -177,6 +204,8 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
   .member-list td::before { content: attr(data-label); color:var(--muted); font-weight:850; text-align:left; }
   .member-list td.name-cell { justify-content:flex-start; text-align:left; }
   .member-list td.name-cell::before { min-width:62px; }
+  .admin-row-actions { justify-content: stretch; }
+  .admin-row-actions button { flex: 1 1 calc(50% - 6px); }
   .avatar { width:36px; height:36px; flex-basis:36px; }
 }
 

@@ -11,7 +11,7 @@
     <div class="login-card" id="admin-login-card">
       <img class="site-logo login-logo" src="assets/images/wegene-logo.png" alt="Wegene logo" />
       <h1>Admin tools</h1>
-      <p>Admin-only planning surface. This uses a separate local demo password and does not store real credentials.</p>
+      <p>Admin-only management for rotation, dates, and hosting state.</p>
       <label for="admin-password">Admin demo password</label>
       <input type="password" id="admin-password" autocomplete="current-password" />
       <button type="button" id="admin-login-button" onclick="window.unlockWegeneAdmin && window.unlockWegeneAdmin()">Enter admin tools</button>
@@ -21,8 +21,8 @@
 
   <div id="admin-shell" hidden>
     <header>
-      <h1>⚙️ Wegene Tracker Admin Tools</h1>
-      <p>Local design placeholder only. No real login, no secrets, and no external integrations are included.</p>
+      <h1>Wegene Tracker Admin</h1>
+      <p>Manage rotation order, current turn, hosting dates, and pass queue.</p>
       <nav>
         <a href="index.html">Tracker</a>
         <a href="admin.html">Admin tools</a>
@@ -31,53 +31,52 @@
     </header>
 
     <main class="stack">
-      <section class="card notice private">
-        <h2>Separately protected admin surface</h2>
-        <p>The shared member password is intentionally not enough for this page. Production should replace this local demo gate with stronger Netlify/server-side admin access before deployment.</p>
-      </section>
+      <section class="card notice" id="admin-message" hidden></section>
 
-      <section class="grid">
-        <div class="card">
-          <h2>Member management</h2>
-          <ul>
-            <li>Add/edit/deactivate head members</li>
-            <li>Set assigned rotation order</li>
-            <li>Upload/update photos</li>
-            <li>Add approved private phone/call-list data only when Jay provides it</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Rotation controls</h2>
-          <ul>
-            <li>Set current get-ready member</li>
-            <li>View/reorder pass queue</li>
-            <li>Mark scheduled event as hosted</li>
-            <li>Skip/cancel/correct mistakes with audit log</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Telegram reminders</h2>
-          <ul>
-            <li>Reminder to current member to host/pass</li>
-            <li>Reminder after date is scheduled</li>
-            <li>Reminder to family before gathering</li>
-            <li>Admin alert when no response</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Data safety</h2>
-          <ul>
-            <li>Export members/history/state as JSON/CSV</li>
-            <li>No member-facing clear-history button</li>
-            <li>No bot tokens or secrets in frontend files</li>
-            <li>Audit log for all admin actions</li>
-          </ul>
-        </div>
+      <section class="card stack">
+        <h2>Current turn</h2>
+        <p id="admin-current-summary">Loading…</p>
+        <div class="actions admin-actions" id="admin-current-actions"></div>
       </section>
 
       <section class="card">
-        <h2>Admin-only data that must remain separately protected</h2>
-        <p>Admin controls, Telegram chat IDs, bot tokens, private notes, delete buttons, payment admin data, audit logs, and credentials. Real phone numbers should not be added to demo fixtures unless Jay explicitly provides approved data for the protected site.</p>
+        <h2>Rotation order</h2>
+        <p class="hint">Move people up/down, set who is Get Ready, and edit dates.</p>
+        <div class="member-table-wrap">
+          <table class="member-list admin-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Member</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Manage</th>
+              </tr>
+            </thead>
+            <tbody id="admin-member-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="card stack">
+          <h2>Pass queue</h2>
+          <ul id="admin-pass-queue" class="compact-list"></ul>
+          <p class="hint" id="admin-pass-empty">No one is in the pass queue.</p>
+        </div>
+        <div class="card stack">
+          <h2>Hosting history</h2>
+          <ul id="admin-history-list" class="compact-list"></ul>
+        </div>
+      </section>
+
+      <section class="card stack">
+        <h2>Data tools</h2>
+        <p class="hint">Changes save in this browser and show on the Tracker page here. To share with everyone, export and replace the seed JSON files in the repo, then redeploy.</p>
+        <div class="actions admin-actions">
+          <button type="button" class="secondary" id="export-json">Export JSON backup</button>
+          <button type="button" class="ghost" id="reset-seed">Reset to seed data</button>
+        </div>
       </section>
     </main>
   </div>
