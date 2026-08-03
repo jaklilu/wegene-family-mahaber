@@ -44,8 +44,33 @@
     return toISODate(date);
   }
 
+  function shiftByWeeks(isoDate, weeks) {
+    const date = parseISODate(isoDate);
+    date.setDate(date.getDate() + (Number(weeks) * 7));
+    return {
+      date: toISODate(date),
+      weekday: weekdayName(date)
+    };
+  }
+
+  function swapAssignedDates(memberA, memberB) {
+    const dateA = memberA.assignedHostDate;
+    const weekdayA = memberA.assignedWeekday;
+    const orderA = memberA.rotationOrder;
+
+    memberA.assignedHostDate = memberB.assignedHostDate;
+    memberA.assignedWeekday = memberB.assignedWeekday;
+    memberA.rotationOrder = memberB.rotationOrder;
+
+    memberB.assignedHostDate = dateA;
+    memberB.assignedWeekday = weekdayA;
+    memberB.rotationOrder = orderA;
+
+    return [memberA, memberB];
+  }
+
   function assignQuarterlyDates(members, options = {}) {
-    const start = options.startMonth || '2026-09';
+    const start = options.startMonth || '2026-11';
     const [startYear, startMonth] = start.split('-').map(Number);
     const weekday = options.defaultWeekday || 'Sunday';
     let year = startYear;
@@ -81,6 +106,8 @@
     weekdayName,
     firstWeekdayOfMonth,
     shiftToWeekendDay,
+    shiftByWeeks,
+    swapAssignedDates,
     assignQuarterlyDates,
     formatAssignedLabel
   };

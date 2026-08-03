@@ -164,6 +164,44 @@ function setWeekendDay(memberId, weekday) {
   showMessage(`${member.name} set to ${member.assignedHostDate} (${weekday}).`);
 }
 
+function shiftMemberByWeeks(memberId, weeks) {
+  const member = memberById(memberId);
+  if (!member?.assignedHostDate || !SCHEDULE) return;
+  const shifted = SCHEDULE.shiftByWeeks(member.assignedHostDate, weeks);
+  member.assignedHostDate = shifted.date;
+  member.assignedWeekday = shifted.weekday;
+  if (data.state.currentMemberId === memberId || data.state.scheduled?.memberId === memberId) {
+    syncScheduled(member);
+  }
+  save();
+  render();
+  showMessage(`${member.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${shifted.date}.`);
+}
+
+function emergencySwap(memberId, otherMemberId) {
+  const member = memberById(memberId);
+  const other = memberById(Number(otherMemberId));
+  if (!member || !other || member.id === other.id || !SCHEDULE) return;
+  if (!member.assignedHostDate || !other.assignedHostDate) {
+    return showMessage('Both members need an assigned date to swap.', true);
+  }
+  if (!confirm(
+    `Emergency swap?\n\n${member.name}: ${member.assignedHostDate}\n${other.name}: ${other.assignedHostDate}\n\n` +
+    `They will exchange dates and places. Earlier date becomes Get Ready.`
+  )) return;
+
+  SCHEDULE.swapAssignedDates(member, other);
+  resequenceOrders();
+  const earlier = member.assignedHostDate <= other.assignedHostDate ? member : other;
+  data.state.currentMemberId = earlier.id;
+  data.state.mainPointerOrder = earlier.rotationOrder;
+  data.state.passQueue = data.state.passQueue.filter((id) => id !== member.id && id !== other.id);
+  syncScheduled(earlier);
+  save();
+  render();
+  showMessage(`Swapped ${member.name} and ${other.name}. ${earlier.name} is Get Ready for ${earlier.assignedHostDate}.`);
+}
+
 function rebuildQuarterlySchedule() {
   if (!SCHEDULE) return showMessage('Schedule helper failed to load.', true);
   if (!confirm('Rebuild all assigned dates from the current rotation order? This starts November 2026 (3 months from Aug 3) and assigns every 3 months on the first Sunday.')) return;
@@ -313,6 +351,10 @@ function render() {
     const status = computeMemberStatus(member);
     const date = memberDate(member);
     const weekday = member.assignedWeekday || 'Sunday';
+    const swapOptions = members
+      .filter((m) => m.id !== member.id && m.assignedHostDate)
+      .map((m) => `<option value="${m.id}">${m.name} (${m.assignedHostDate})</option>`)
+      .join('');
     return `<tr class="${member.id === data.state.currentMemberId ? 'current' : ''}">
       <td data-label="Order">${index + 1}</td>
       <td data-label="Member" class="name-cell">${member.name}</td>
@@ -326,9 +368,18 @@ function render() {
           <button type="button" class="ghost small" data-action="down" data-id="${member.id}" ${index === members.length - 1 ? 'disabled' : ''}>Down</button>
           <button type="button" class="ghost small" data-action="sat" data-id="${member.id}">Sat</button>
           <button type="button" class="ghost small" data-action="sun" data-id="${member.id}">Sun</button>
+          <button type="button" class="ghost small" data-action="week-earlier" data-id="${member.id}">-1 week</button>
+          <button type="button" class="ghost small" data-action="week-later" data-id="${member.id}">+1 week</button>
           <button type="button" class="secondary small" data-action="ready" data-id="${member.id}">Get Ready</button>
           <button type="button" class="ghost small" data-action="pass" data-id="${member.id}">${data.state.passQueue.includes(member.id) ? 'Unpass' : 'Pass'}</button>
           <button type="button" class="warn small" data-action="hosted" data-id="${member.id}">Mark hosted</button>
+        </div>
+        <div class="admin-swap-row">
+          <select class="admin-swap-select" data-member-id="${member.id}" aria-label="Swap ${member.name} with">
+            <option value="">Emergency swap with…</option>
+            ${swapOptions}
+          </select>
+          <button type="button" class="secondary small" data-action="swap" data-id="${member.id}">Swap</button>
         </div>
       </td>
     </tr>`;
@@ -342,11 +393,18 @@ function render() {
       if (action === 'down') moveMember(id, 'down');
       if (action === 'sat') setWeekendDay(id, 'Saturday');
       if (action === 'sun') setWeekendDay(id, 'Sunday');
+      if (action === 'week-earlier') shiftMemberByWeeks(id, -1);
+      if (action === 'week-later') shiftMemberByWeeks(id, 1);
       if (action === 'ready') setGetReady(id);
       if (action === 'pass') togglePass(id);
       if (action === 'hosted') {
         const dateInput = $('admin-member-table').querySelector(`.admin-date[data-member-id="${id}"]`);
         markHostedNow(id, dateInput?.value);
+      }
+      if (action === 'swap') {
+        const select = $('admin-member-table').querySelector(`.admin-swap-select[data-member-id="${id}"]`);
+        if (!select?.value) return showMessage('Choose who to swap with first.', true);
+        emergencySwap(id, select.value);
       }
     });
   });

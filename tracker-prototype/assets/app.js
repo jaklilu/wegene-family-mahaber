@@ -110,6 +110,41 @@ function setWeekendDay(data, weekday) {
   showMessage(`${current.name}'s hosting date set to ${nextDate} (${weekday}).`);
 }
 
+function shiftCurrentByWeeks(data, weeks) {
+  const current = memberById(data, data.state.currentMemberId);
+  if (!current?.assignedHostDate || !SCHEDULE) return;
+  const shifted = SCHEDULE.shiftByWeeks(current.assignedHostDate, weeks);
+  current.assignedHostDate = shifted.date;
+  current.assignedWeekday = shifted.weekday;
+  syncScheduled(data, current);
+  save(data);
+  render(data);
+  showMessage(`${current.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${shifted.date} (${shifted.weekday}).`);
+}
+
+function emergencySwap(data, otherMemberId) {
+  const current = memberById(data, data.state.currentMemberId);
+  const other = memberById(data, Number(otherMemberId));
+  if (!current || !other || !SCHEDULE) return;
+  if (!current.assignedHostDate || !other.assignedHostDate) {
+    return showMessage('Both members need an assigned date to swap.');
+  }
+  if (!confirm(
+    `Emergency swap?\n\n${current.name}: ${current.assignedHostDate}\n${other.name}: ${other.assignedHostDate}\n\n` +
+    `They will exchange dates and places in the order. The person with the earlier date becomes Get Ready.`
+  )) return;
+
+  SCHEDULE.swapAssignedDates(current, other);
+  const earlier = current.assignedHostDate <= other.assignedHostDate ? current : other;
+  data.state.currentMemberId = earlier.id;
+  data.state.mainPointerOrder = earlier.rotationOrder;
+  data.state.passQueue = data.state.passQueue.filter((id) => id !== current.id && id !== other.id);
+  syncScheduled(data, earlier);
+  save(data);
+  render(data);
+  showMessage(`Swapped dates between ${current.name} and ${other.name}. ${earlier.name} is now Get Ready for ${earlier.assignedHostDate}.`);
+}
+
 function passCurrentMember(data) {
   const current = memberById(data, data.state.currentMemberId);
   if (!current) return;
@@ -178,15 +213,51 @@ function render(data) {
       }`
     : 'No current member selected.';
 
+  const others = sortedActiveMembers(data).filter((m) => m.id !== current?.id && m.assignedHostDate);
+
   $('current-actions').innerHTML = `
-    <button type="button" class="ghost" id="set-saturday" ${weekday === 'Saturday' ? 'disabled' : ''}>Use Saturday</button>
-    <button type="button" class="ghost" id="set-sunday" ${weekday === 'Sunday' ? 'disabled' : ''}>Use Sunday</button>
-    <button type="button" class="secondary" id="confirm-hosted">Confirm hosted</button>
-    <button type="button" class="warn" id="pass-button">I will pass</button>
+    <div class="option-group">
+      <p class="option-label">1. Weekend day</p>
+      <div class="actions">
+        <button type="button" class="ghost" id="set-saturday" ${weekday === 'Saturday' ? 'disabled' : ''}>Saturday</button>
+        <button type="button" class="ghost" id="set-sunday" ${weekday === 'Sunday' ? 'disabled' : ''}>Sunday</button>
+      </div>
+    </div>
+    <div class="option-group">
+      <p class="option-label">2. Move by one week</p>
+      <div class="actions">
+        <button type="button" class="ghost" id="week-earlier">One week earlier</button>
+        <button type="button" class="ghost" id="week-later">One week later</button>
+      </div>
+    </div>
+    <div class="option-group">
+      <p class="option-label">3. Emergency swap with another family</p>
+      <div class="actions swap-actions">
+        <select id="swap-member" aria-label="Swap date with member">
+          <option value="">Choose member…</option>
+          ${others.map((m) => `<option value="${m.id}">${m.name} (${m.assignedHostDate})</option>`).join('')}
+        </select>
+        <button type="button" class="secondary" id="swap-button">Swap dates</button>
+      </div>
+    </div>
+    <div class="option-group">
+      <p class="option-label">Turn actions</p>
+      <div class="actions">
+        <button type="button" class="secondary" id="confirm-hosted">Confirm hosted</button>
+        <button type="button" class="warn" id="pass-button">I will pass</button>
+      </div>
+    </div>
   `;
 
   $('set-saturday')?.addEventListener('click', () => setWeekendDay(data, 'Saturday'));
   $('set-sunday')?.addEventListener('click', () => setWeekendDay(data, 'Sunday'));
+  $('week-earlier')?.addEventListener('click', () => shiftCurrentByWeeks(data, -1));
+  $('week-later')?.addEventListener('click', () => shiftCurrentByWeeks(data, 1));
+  $('swap-button')?.addEventListener('click', () => {
+    const value = $('swap-member')?.value;
+    if (!value) return showMessage('Choose a family member to swap with first.');
+    emergencySwap(data, value);
+  });
   $('confirm-hosted')?.addEventListener('click', () => confirmHosted(data));
   $('pass-button')?.addEventListener('click', () => passCurrentMember(data));
 

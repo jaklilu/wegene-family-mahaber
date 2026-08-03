@@ -128,6 +128,42 @@ input[type="date"], input[type="password"] { padding: 11px 12px; border:1px soli
 input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(47, 143, 91, .12); }
 .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:end; position:relative; }
 .actions button { min-height:48px; }
+#current-actions {
+  display: grid;
+  gap: 14px;
+  justify-items: stretch;
+  text-align: left;
+}
+.option-group {
+  background: rgba(255,255,255,.55);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+}
+.option-label {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-weight: 850;
+  font-size: .95rem;
+}
+.swap-actions {
+  align-items: stretch;
+}
+select {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  min-height: 48px;
+  min-width: min(100%, 260px);
+  flex: 1 1 220px;
+}
+select:focus {
+  border-color: rgba(47, 143, 91, .55);
+  box-shadow: 0 0 0 4px rgba(47, 143, 91, .12);
+  outline: none;
+}
 .hidden-date-picker { position:absolute; width:1px !important; height:1px !important; min-width:0 !important; min-height:0 !important; opacity:0; pointer-events:none; left:12px; bottom:12px; }
 .small { padding: 8px 11px; font-size: .85rem; }
 #app-shell[hidden],
@@ -150,6 +186,18 @@ body.is-authenticated #admin-shell { display:block !important; }
 .hint { margin: 0 0 12px; color: var(--muted); font-size: .95rem; }
 .admin-actions { margin-top: 4px; }
 .admin-row-actions { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+.admin-swap-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+.admin-swap-row select {
+  min-width: min(100%, 220px);
+  min-height: 40px;
+  padding: 8px 10px;
+}
 .admin-table .admin-date,
 .history-row input[type="date"] {
   width: auto;
