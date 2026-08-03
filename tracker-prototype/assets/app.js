@@ -169,31 +169,19 @@ function render(data) {
   const others = sortedActiveMembers(data).filter((m) => m.id !== current?.id && m.assignedHostDate);
 
   $('current-actions').innerHTML = `
-    <div class="option-group">
-      <p class="option-label">1. Weekend day</p>
-      <p class="hint weekend-hint">Set on <strong>${weekday}</strong> by default.</p>
-      <div class="actions">
-        ${weekday === 'Sunday'
-          ? '<button type="button" class="ghost" id="toggle-weekend">Change to Saturday</button>'
-          : '<button type="button" class="ghost" id="toggle-weekend">Change back to Sunday</button>'}
-      </div>
+    <div class="actions clean-actions">
+      <button type="button" class="ghost" id="toggle-weekend">
+        ${weekday === 'Sunday' ? 'Change to Saturday' : 'Change back to Sunday'}
+      </button>
+      <button type="button" class="ghost" id="week-earlier">1 week earlier</button>
+      <button type="button" class="ghost" id="week-later">1 week later</button>
     </div>
-    <div class="option-group">
-      <p class="option-label">2. Move by one week</p>
-      <div class="actions pair-actions">
-        <button type="button" class="ghost" id="week-earlier">1 week earlier</button>
-        <button type="button" class="ghost" id="week-later">1 week later</button>
-      </div>
-    </div>
-    <div class="option-group">
-      <p class="option-label">3. Emergency swap</p>
-      <div class="actions swap-actions">
-        <select id="swap-member" aria-label="Swap date with member">
-          <option value="">Choose member…</option>
-          ${others.map((m) => `<option value="${m.id}">${m.name} · ${prettyDate(m.assignedHostDate)}</option>`).join('')}
-        </select>
-        <button type="button" class="secondary" id="swap-button">Swap dates</button>
-      </div>
+    <div class="actions swap-actions">
+      <select id="swap-member" aria-label="Swap date with member">
+        <option value="">Swap with…</option>
+        ${others.map((m) => `<option value="${m.id}">${m.name} · ${prettyDate(m.assignedHostDate)}</option>`).join('')}
+      </select>
+      <button type="button" class="secondary" id="swap-button">Swap dates</button>
     </div>
   `;
 
