@@ -199,7 +199,7 @@ function render(data) {
       <td data-label="Order">${index + 1}</td>
       <td data-label="Member" class="name-cell">${renderAvatar(member)} ${member.name}</td>
       <td data-label="Status">${badge(status)}</td>
-      <td data-label="Date">${displayDate(data, member)}</td>
+      <td data-label="Date" class="date-cell">${displayDate(data, member)}</td>
     </tr>`;
   }).join('');
 

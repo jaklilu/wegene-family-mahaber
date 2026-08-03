@@ -239,6 +239,12 @@ tr:last-child td { border-bottom:0; }
 .avatar { width:42px; height:42px; flex: 0 0 42px; border-radius:50%; display:inline-grid; place-items:center; background:linear-gradient(135deg, #1ba651, #ffd23f 58%, #df342f); color:#fff; font-weight:900; margin-right:10px; overflow:hidden; vertical-align:middle; box-shadow: inset 0 0 0 1px rgba(255,255,255,.65); text-shadow: 0 1px 6px rgba(0,0,0,.35); }
 .avatar img { width:100%; height:100%; object-fit:cover; }
 .name-cell { display:flex; align-items:center; font-weight:850; color: var(--ink); }
+.date-cell {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+}
 .current-person { display:flex; align-items:center; gap:8px; font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 950; color: var(--green-dark); letter-spacing: -0.04em; line-height: 1.05; flex-wrap: wrap; }
 .current-person .avatar { width:58px; height:58px; flex-basis:58px; font-size:1.1rem; }
 .current-label { display:block; margin-top:8px; font-size:1.08rem; font-weight:850; color:var(--muted); }
@@ -505,6 +511,11 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
     justify-content:flex-start;
     text-align:left;
     font-size: 1.05rem;
+  }
+  .member-list td.date-cell,
+  .member-list td[data-label="Date"] {
+    font-size: 1.12rem;
+    font-weight: 850;
   }
   .member-list td.name-cell::before { content: none; }
   .member-list td[data-label="Manage"] {
