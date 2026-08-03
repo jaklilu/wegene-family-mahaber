@@ -104,35 +104,75 @@ function setWeekendDay(data, weekday) {
   const current = memberById(data, data.state.currentMemberId);
   if (!current?.assignedHostDate || !SCHEDULE) return;
   const nextDate = SCHEDULE.shiftToWeekendDay(current.assignedHostDate, weekday);
-  current.assignedHostDate = nextDate;
-  current.assignedWeekday = weekday;
-  syncScheduled(data, current);
-  save(data);
-  render(data);
-  showMessage(`${current.name}'s hosting date set to ${prettyDate(nextDate)}.`);
+  requestDateConfirm({
+    label: weekday === 'Saturday' ? 'Change to Saturday?' : 'Change back to Sunday?',
+    date: nextDate,
+    onConfirm: () => {
+      current.assignedHostDate = nextDate;
+      current.assignedWeekday = weekday;
+      syncScheduled(data, current);
+      save(data);
+      hideDateConfirm();
+      render(data);
+    }
+  });
 }
 
 function shiftCurrentByWeeks(data, weeks) {
   const current = memberById(data, data.state.currentMemberId);
   if (!current?.assignedHostDate || !SCHEDULE) return;
   const shifted = SCHEDULE.shiftByWeeks(current.assignedHostDate, weeks);
-  current.assignedHostDate = shifted.date;
-  current.assignedWeekday = shifted.weekday;
-  syncScheduled(data, current);
-  save(data);
-  render(data);
-  showMessage(`${current.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${prettyDate(shifted.date)}.`);
+  requestDateConfirm({
+    label: weeks < 0 ? 'Move one week earlier?' : 'Move one week later?',
+    date: shifted.date,
+    onConfirm: () => {
+      current.assignedHostDate = shifted.date;
+      current.assignedWeekday = shifted.weekday;
+      syncScheduled(data, current);
+      save(data);
+      hideDateConfirm();
+      render(data);
+    }
+  });
+}
+
+function hideDateConfirm() {
+  const panel = $('date-confirm');
+  if (panel) panel.hidden = true;
+  const button = $('date-confirm-button');
+  if (button) button.onclick = null;
+}
+
+function requestDateConfirm({ label, date, onConfirm }) {
+  hideSwapConfirm();
+  const panel = $('date-confirm');
+  const labelEl = $('date-confirm-label');
+  const dateEl = $('date-confirm-date');
+  const button = $('date-confirm-button');
+  const message = $('validation-message');
+  if (!panel || !labelEl || !dateEl || !button) return;
+
+  if (message) message.hidden = true;
+  labelEl.textContent = label;
+  dateEl.textContent = prettyDate(date);
+  panel.hidden = false;
+  button.onclick = () => {
+    button.onclick = null;
+    onConfirm();
+  };
 }
 
 function hideSwapConfirm() {
   const panel = $('swap-confirm');
   if (panel) panel.hidden = true;
+  hideDateConfirm();
 }
 
 function showSwapConfirm(other) {
   const panel = $('swap-confirm');
   const text = $('swap-confirm-text');
   if (!panel || !text) return;
+  hideDateConfirm();
   text.textContent = `Have you confirmed this date swap with ${other.name}?`;
   panel.hidden = false;
 }

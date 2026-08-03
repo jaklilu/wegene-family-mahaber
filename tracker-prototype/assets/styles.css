@@ -350,7 +350,30 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
   background: linear-gradient(135deg, var(--green), var(--green-dark));
   color: #fff;
 }
-#swap-confirm[hidden] { display: none !important; }
+#swap-confirm[hidden],
+#date-confirm[hidden] { display: none !important; }
+.date-confirm-label {
+  margin-bottom: 6px !important;
+  color: var(--muted) !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+}
+.date-confirm-date {
+  margin: 0 0 14px !important;
+  color: var(--green-dark) !important;
+  font-size: clamp(1.45rem, 4.5vw, 2rem) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.date-confirm-button {
+  width: min(100%, 280px);
+  margin-inline: auto;
+  min-height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .pair-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
