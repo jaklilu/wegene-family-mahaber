@@ -16,15 +16,24 @@
       document.body.classList.add('menu-open');
     };
 
-    toggle.addEventListener('click', () => {
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
       if (menu.classList.contains('is-open')) close();
       else open();
+    });
+
+    menu.addEventListener('click', (event) => {
+      event.stopPropagation();
     });
 
     menu.querySelectorAll('a, button').forEach((item) => {
       item.addEventListener('click', () => {
         if (window.matchMedia('(max-width: 760px)').matches) close();
       });
+    });
+
+    document.addEventListener('click', () => {
+      if (menu.classList.contains('is-open')) close();
     });
 
     document.addEventListener('keydown', (event) => {
