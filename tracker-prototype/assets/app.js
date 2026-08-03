@@ -1,7 +1,6 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v4';
-const DAY_MS = 24 * 60 * 60 * 1000;
-const CONFIG = window.WEGENE_CONFIG || {};
+const STORAGE_KEY = 'wegene-tracker-mvp-v5';
 const AUTH = window.WegeneAuth;
+const SCHEDULE = window.WegeneSchedule;
 
 const $ = (id) => document.getElementById(id);
 
@@ -20,36 +19,23 @@ async function setupLoginGate() {
 
 async function loadSeedData() {
   const [members, state, history] = await Promise.all([
-    fetch('data/members.json').then(r => r.json()),
-    fetch('data/state.json').then(r => r.json()),
-    fetch('data/history.json').then(r => r.json())
+    fetch('data/members.json').then((r) => r.json()),
+    fetch('data/state.json').then((r) => r.json()),
+    fetch('data/history.json').then((r) => r.json())
   ]);
   return { members, state, history };
 }
 
 function getInitials(name) {
-  return name.split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
-}
-
-function minHostDate() {
-  const date = new Date(Date.now() + 21 * DAY_MS);
-  date.setHours(0, 0, 0, 0);
-  return date.toISOString().slice(0, 10);
-}
-
-function parseDateInput(value) {
-  const [y, m, d] = value.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  date.setHours(0, 0, 0, 0);
-  return date;
+  return name.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
 }
 
 function badge(status) {
   const map = {
-    hosted: ['hosted', '✅ Hosted'],
-    ready: ['ready', '🔘 Get Ready'],
-    scheduled: ['scheduled', '📅 Scheduled'],
-    passed: ['passed', '⏭️ Passed'],
+    hosted: ['hosted', 'Hosted'],
+    ready: ['ready', 'Get Ready'],
+    scheduled: ['scheduled', 'Scheduled'],
+    passed: ['passed', 'Passed'],
     waiting: ['waiting', 'Waiting']
   };
   const [cls, label] = map[status] || map.waiting;
@@ -57,27 +43,52 @@ function badge(status) {
 }
 
 function memberById(data, id) {
-  return data.members.find(m => m.id === id);
+  return data.members.find((m) => m.id === id);
 }
 
 function sortedActiveMembers(data) {
-  return [...data.members].filter(m => m.active && m.hostingEligible).sort((a, b) => a.rotationOrder - b.rotationOrder);
+  return [...data.members]
+    .filter((m) => m.active && m.hostingEligible)
+    .sort((a, b) => a.rotationOrder - b.rotationOrder);
 }
 
 function nextInMainOrder(data, afterOrder) {
   const members = sortedActiveMembers(data);
-  return members.find(m => m.rotationOrder > afterOrder) || members[0];
+  return members.find((m) => m.rotationOrder > afterOrder) || members[0];
+}
+
+function syncScheduled(data, member) {
+  if (!member?.assignedHostDate) {
+    data.state.scheduled = null;
+    return;
+  }
+  data.state.scheduled = {
+    memberId: member.id,
+    date: member.assignedHostDate,
+    status: 'scheduled',
+    weekday: member.assignedWeekday || 'Sunday'
+  };
 }
 
 function computeMemberStatus(data, member) {
-  if (data.state.scheduled?.memberId === member.id) return 'scheduled';
-  if (data.state.currentMemberId === member.id) return 'ready';
   if (data.state.passQueue.includes(member.id)) return 'passed';
-  if (data.history.some(h => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted')) return 'hosted';
+  if (data.state.currentMemberId === member.id) return 'ready';
+  if (member.assignedHostDate) return 'scheduled';
+  if (data.history.some((h) => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted')) {
+    return 'hosted';
+  }
   return 'waiting';
 }
 
+function displayDate(data, member) {
+  if (member.assignedHostDate && SCHEDULE) return SCHEDULE.formatAssignedLabel(member);
+  if (data.state.scheduled?.memberId === member.id) return data.state.scheduled.date;
+  const hist = data.history.find((h) => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted');
+  return hist?.hostingDate || '—';
+}
+
 function save(data) {
+  data.state.updatedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
@@ -87,27 +98,16 @@ function showMessage(text) {
   box.hidden = false;
 }
 
-function openHostDatePicker() {
-  const input = $('host-date-picker');
-  if (!input) return;
-  if (typeof input.showPicker === 'function') input.showPicker();
-  else input.click();
-  input.focus();
-}
-
-function scheduleHost(data, dateValue) {
-  if (!dateValue) return showMessage('Please choose a hosting date first.');
-  const selected = parseDateInput(dateValue);
-  const minimum = parseDateInput(minHostDate());
-  if (selected < minimum) {
-    return showMessage(`Please choose a date at least 3 weeks from today: ${minHostDate()} or later.`);
-  }
-  data.state.scheduled = { memberId: data.state.currentMemberId, date: dateValue, status: 'scheduled' };
-  data.state.passQueue = data.state.passQueue.filter(id => id !== data.state.currentMemberId);
-  data.state.updatedAt = new Date().toISOString();
+function setWeekendDay(data, weekday) {
+  const current = memberById(data, data.state.currentMemberId);
+  if (!current?.assignedHostDate || !SCHEDULE) return;
+  const nextDate = SCHEDULE.shiftToWeekendDay(current.assignedHostDate, weekday);
+  current.assignedHostDate = nextDate;
+  current.assignedWeekday = weekday;
+  syncScheduled(data, current);
   save(data);
   render(data);
-  showMessage('Hosting date scheduled. After hosting is confirmed, this member will move to the bottom of the rotation list.');
+  showMessage(`${current.name}'s hosting date set to ${nextDate} (${weekday}).`);
 }
 
 function passCurrentMember(data) {
@@ -118,16 +118,18 @@ function passCurrentMember(data) {
   const next = nextInMainOrder(data, current.rotationOrder);
   data.state.currentMemberId = next.id;
   data.state.mainPointerOrder = next.rotationOrder;
-  data.state.scheduled = null;
-  data.state.updatedAt = new Date().toISOString();
+  syncScheduled(data, next);
   save(data);
   render(data);
   showMessage(`${current.name} was added to the pass queue. ${next.name} is now Get Ready.`);
 }
 
 function confirmHosted(data) {
-  const scheduled = data.state.scheduled;
-  if (!scheduled) return;
+  const current = memberById(data, data.state.currentMemberId);
+  const scheduled = data.state.scheduled || (current?.assignedHostDate
+    ? { memberId: current.id, date: current.assignedHostDate, status: 'scheduled' }
+    : null);
+  if (!scheduled) return showMessage('No assigned hosting date to confirm.');
   const hostedMember = memberById(data, scheduled.memberId);
   data.history.unshift({
     id: `hist-${Date.now()}`,
@@ -136,11 +138,11 @@ function confirmHosted(data) {
     hostingDate: scheduled.date,
     round: data.state.round,
     status: 'hosted',
-    notes: 'Confirmed in local prototype demo.'
+    notes: 'Confirmed from assigned quarterly schedule.'
   });
   data.state.lastHostedMemberId = hostedMember.id;
   const hostedOrder = hostedMember.rotationOrder;
-  const maxOrder = Math.max(...sortedActiveMembers(data).map(member => member.rotationOrder));
+  const maxOrder = Math.max(...sortedActiveMembers(data).map((member) => member.rotationOrder));
   let next;
   if (data.state.passQueue.length) {
     const nextId = data.state.passQueue.shift();
@@ -151,8 +153,7 @@ function confirmHosted(data) {
   hostedMember.rotationOrder = maxOrder + 1;
   data.state.currentMemberId = next.id;
   data.state.mainPointerOrder = next.rotationOrder;
-  data.state.scheduled = null;
-  data.state.updatedAt = new Date().toISOString();
+  syncScheduled(data, next);
   save(data);
   render(data);
   showMessage(`${hostedMember.name} marked hosted. ${next.name} is now Get Ready${data.state.passQueue.length ? ' from the pass queue' : ''}.`);
@@ -165,50 +166,52 @@ function renderAvatar(member) {
 
 function render(data) {
   const current = memberById(data, data.state.currentMemberId);
+  if (current && !data.state.scheduled) syncScheduled(data, current);
   const scheduled = data.state.scheduled;
+  const weekday = current?.assignedWeekday || scheduled?.weekday || 'Sunday';
+
   $('current-summary').innerHTML = current
-    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong> <span class="current-inline-label">- you are next</span></span>${scheduled ? `<br><span class="scheduled-line">Scheduled date: <strong>${scheduled.date}</strong></span>` : ''}`
+    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong> <span class="current-inline-label">- you are next</span></span>${
+        scheduled
+          ? `<br><span class="scheduled-line">Assigned date: <strong>${scheduled.date}</strong> (${weekday})</span>`
+          : ''
+      }`
     : 'No current member selected.';
 
-  const min = minHostDate();
-  $('current-actions').innerHTML = scheduled
-    ? `<button class="secondary" id="confirm-hosted">Demo: confirm hosted</button><span class="badge scheduled">Minimum date rule met</span>`
-    : `<input class="hidden-date-picker" type="date" id="host-date-picker" min="${min}" value="${min}" aria-label="Choose hosting date" />
-       <button id="host-button">📅 I will host</button>
-       <button class="warn" id="pass-button">❌ I will pass</button>
-       <span class="badge waiting">Earliest host date: ${min}</span>`;
+  $('current-actions').innerHTML = `
+    <button type="button" class="ghost" id="set-saturday" ${weekday === 'Saturday' ? 'disabled' : ''}>Use Saturday</button>
+    <button type="button" class="ghost" id="set-sunday" ${weekday === 'Sunday' ? 'disabled' : ''}>Use Sunday</button>
+    <button type="button" class="secondary" id="confirm-hosted">Confirm hosted</button>
+    <button type="button" class="warn" id="pass-button">I will pass</button>
+  `;
 
-  if (scheduled) $('confirm-hosted').addEventListener('click', () => confirmHosted(data));
-  else {
-    $('host-button').addEventListener('click', openHostDatePicker);
-    $('host-date-picker').addEventListener('change', () => scheduleHost(data, $('host-date-picker').value));
-    $('pass-button').addEventListener('click', () => passCurrentMember(data));
-  }
+  $('set-saturday')?.addEventListener('click', () => setWeekendDay(data, 'Saturday'));
+  $('set-sunday')?.addEventListener('click', () => setWeekendDay(data, 'Sunday'));
+  $('confirm-hosted')?.addEventListener('click', () => confirmHosted(data));
+  $('pass-button')?.addEventListener('click', () => passCurrentMember(data));
 
   const activeMembers = sortedActiveMembers(data);
-  $('member-table').innerHTML = activeMembers.map(member => {
+  $('member-table').innerHTML = activeMembers.map((member, index) => {
     const status = computeMemberStatus(data, member);
-    const date = data.state.scheduled?.memberId === member.id ? data.state.scheduled.date : (data.history.find(h => h.memberId === member.id && h.round === data.state.round)?.hostingDate || '—');
     return `<tr class="${member.id === data.state.currentMemberId ? 'current' : ''}">
-      <td data-label="Order">${member.rotationOrder}</td>
+      <td data-label="Order">${index + 1}</td>
       <td data-label="Member" class="name-cell">${renderAvatar(member)} ${member.name}</td>
       <td data-label="Status">${badge(status)}</td>
-      <td data-label="Date">${date}</td>
+      <td data-label="Date">${displayDate(data, member)}</td>
     </tr>`;
   }).join('');
 
   const callList = $('member-call-list');
   if (callList) {
-    callList.innerHTML = activeMembers.map(member => {
+    callList.innerHTML = activeMembers.map((member) => {
       const phone = member.phone && member.phone !== '(private)' ? member.phone : 'Phone pending approved data';
       return `<li><strong>${member.name}</strong><span>${phone}</span></li>`;
     }).join('');
   }
-
 }
 
 async function boot() {
-  const loginReady = await setupLoginGate();
+  await setupLoginGate();
   $('logout-button').addEventListener('click', () => {
     AUTH.clearSession('member');
     location.reload();
@@ -218,7 +221,10 @@ async function boot() {
   render(data);
 }
 
-boot().catch(err => {
+boot().catch((err) => {
   console.error(err);
-  document.body.insertAdjacentHTML('afterbegin', `<main class="card"><h1>Could not load prototype data</h1><p>Run through a local web server, not direct file open. See README.md.</p></main>`);
+  document.body.insertAdjacentHTML(
+    'afterbegin',
+    '<main class="card"><h1>Could not load prototype data</h1><p>Run through a local web server, not direct file open. See README.md.</p></main>'
+  );
 });

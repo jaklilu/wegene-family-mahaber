@@ -1,4 +1,5 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v4';
+const STORAGE_KEY = 'wegene-tracker-mvp-v5';
+const SCHEDULE = window.WegeneSchedule;
 
 const $ = (id) => document.getElementById(id);
 
@@ -36,10 +37,23 @@ function resequenceOrders() {
   if (current) data.state.mainPointerOrder = current.rotationOrder;
 }
 
+function syncScheduled(member) {
+  if (!member?.assignedHostDate) {
+    data.state.scheduled = null;
+    return;
+  }
+  data.state.scheduled = {
+    memberId: member.id,
+    date: member.assignedHostDate,
+    status: 'scheduled',
+    weekday: member.assignedWeekday || 'Sunday'
+  };
+}
+
 function computeMemberStatus(member) {
-  if (data.state.scheduled?.memberId === member.id) return 'scheduled';
-  if (data.state.currentMemberId === member.id) return 'ready';
   if (data.state.passQueue.includes(member.id)) return 'passed';
+  if (data.state.currentMemberId === member.id) return 'ready';
+  if (member.assignedHostDate) return 'scheduled';
   if (data.history.some((h) => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted')) {
     return 'hosted';
   }
@@ -59,9 +73,9 @@ function badge(status) {
 }
 
 function memberDate(member) {
+  if (member.assignedHostDate) return member.assignedHostDate;
   if (data.state.scheduled?.memberId === member.id) return data.state.scheduled.date;
-  const hist = data.history.find((h) => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted');
-  return hist?.hostingDate || '';
+  return '';
 }
 
 function showMessage(text, isError = false) {
@@ -90,20 +104,19 @@ function moveMember(memberId, direction) {
   resequenceOrders();
   save();
   render();
-  showMessage(`Moved ${a.name} ${direction}.`);
+  showMessage(`Moved ${a.name} ${direction}. Use Rebuild dates if you want dates to follow the new order.`);
 }
 
 function setGetReady(memberId) {
   const member = memberById(memberId);
   if (!member) return;
-  if (data.state.scheduled && !confirm('There is a scheduled hosting. Clear it and set a new Get Ready member?')) return;
   data.state.currentMemberId = member.id;
   data.state.mainPointerOrder = member.rotationOrder;
-  data.state.scheduled = null;
   data.state.passQueue = data.state.passQueue.filter((id) => id !== member.id);
+  syncScheduled(member);
   save();
   render();
-  showMessage(`${member.name} is now Get Ready.`);
+  showMessage(`${member.name} is now Get Ready${member.assignedHostDate ? ` for ${member.assignedHostDate}` : ''}.`);
 }
 
 function togglePass(memberId) {
@@ -128,47 +141,66 @@ function updateMemberDate(memberId, dateValue) {
   const member = memberById(memberId);
   if (!member) return;
   if (!dateValue) return showMessage('Choose a date first.', true);
-
-  if (data.state.scheduled?.memberId === memberId) {
-    data.state.scheduled.date = dateValue;
-    save();
-    render();
-    return showMessage(`Updated scheduled date for ${member.name} to ${dateValue}.`);
+  member.assignedHostDate = dateValue;
+  if (SCHEDULE) member.assignedWeekday = SCHEDULE.weekdayName(SCHEDULE.parseISODate(dateValue));
+  if (data.state.currentMemberId === memberId || data.state.scheduled?.memberId === memberId) {
+    syncScheduled(member);
   }
+  save();
+  render();
+  showMessage(`Updated assigned date for ${member.name} to ${dateValue}.`);
+}
 
-  const hist = data.history.find((h) => h.memberId === memberId && h.round === data.state.round && h.status === 'hosted');
-  if (hist) {
-    hist.hostingDate = dateValue;
-    save();
-    render();
-    return showMessage(`Updated hosted date for ${member.name} to ${dateValue}.`);
+function setWeekendDay(memberId, weekday) {
+  const member = memberById(memberId);
+  if (!member?.assignedHostDate || !SCHEDULE) return;
+  member.assignedHostDate = SCHEDULE.shiftToWeekendDay(member.assignedHostDate, weekday);
+  member.assignedWeekday = weekday;
+  if (data.state.currentMemberId === memberId || data.state.scheduled?.memberId === memberId) {
+    syncScheduled(member);
   }
+  save();
+  render();
+  showMessage(`${member.name} set to ${member.assignedHostDate} (${weekday}).`);
+}
 
-  if (data.state.currentMemberId === memberId || confirm(`Set ${member.name} as scheduled host for ${dateValue}?`)) {
-    data.state.scheduled = { memberId, date: dateValue, status: 'scheduled' };
-    if (data.state.currentMemberId !== memberId) {
-      data.state.currentMemberId = memberId;
-      data.state.mainPointerOrder = member.rotationOrder;
-    }
-    data.state.passQueue = data.state.passQueue.filter((id) => id !== memberId);
-    save();
-    render();
-    return showMessage(`${member.name} scheduled for ${dateValue}.`);
-  }
+function rebuildQuarterlySchedule() {
+  if (!SCHEDULE) return showMessage('Schedule helper failed to load.', true);
+  if (!confirm('Rebuild all assigned dates from the current rotation order? This starts September 2026 and assigns every 3 months on the first Sunday.')) return;
+  SCHEDULE.assignQuarterlyDates(data.members, {
+    startMonth: '2026-09',
+    intervalMonths: 3,
+    defaultWeekday: 'Sunday'
+  });
+  data.state.scheduleRule = {
+    intervalMonths: 3,
+    week: 'first',
+    defaultWeekday: 'Sunday',
+    allowedWeekdays: ['Saturday', 'Sunday'],
+    startMonth: '2026-09',
+    notes: 'Agreed 2026-08-02: every three months, first week of the month, default Sunday, optional Sat/Sun change.'
+  };
+  const current = memberById(data.state.currentMemberId);
+  syncScheduled(current);
+  save();
+  render();
+  showMessage('Rebuilt quarterly Sunday schedule from the current order.');
 }
 
 function clearSchedule() {
   if (!data.state.scheduled) return;
-  if (!confirm('Clear the scheduled hosting date?')) return;
-  const member = memberById(data.state.scheduled.memberId);
+  if (!confirm('Clear the current scheduled pointer? Assigned member dates will remain.')) return;
   data.state.scheduled = null;
   save();
   render();
-  showMessage(`Cleared scheduled date${member ? ` for ${member.name}` : ''}.`);
+  showMessage('Cleared current schedule pointer.');
 }
 
 function confirmHosted() {
-  const scheduled = data.state.scheduled;
+  const current = memberById(data.state.currentMemberId);
+  const scheduled = data.state.scheduled || (current?.assignedHostDate
+    ? { memberId: current.id, date: current.assignedHostDate, status: 'scheduled' }
+    : null);
   if (!scheduled) return showMessage('No scheduled hosting to confirm.', true);
   const hostedMember = memberById(scheduled.memberId);
   if (!hostedMember) return;
@@ -199,7 +231,7 @@ function confirmHosted() {
   resequenceOrders();
   data.state.currentMemberId = next.id;
   data.state.mainPointerOrder = next.rotationOrder;
-  data.state.scheduled = null;
+  syncScheduled(next);
   save();
   render();
   showMessage(`${hostedMember.name} marked hosted. ${next.name} is now Get Ready.`);
@@ -208,10 +240,11 @@ function confirmHosted() {
 function markHostedNow(memberId, dateValue) {
   const member = memberById(memberId);
   if (!member) return;
-  const date = dateValue || new Date().toISOString().slice(0, 10);
+  const date = dateValue || member.assignedHostDate || new Date().toISOString().slice(0, 10);
   if (!confirm(`Mark ${member.name} as hosted on ${date} and move them to the bottom?`)) return;
 
-  data.state.scheduled = { memberId: member.id, date, status: 'scheduled' };
+  member.assignedHostDate = date;
+  data.state.scheduled = { memberId: member.id, date, status: 'scheduled', weekday: member.assignedWeekday || 'Sunday' };
   data.state.currentMemberId = member.id;
   data.state.mainPointerOrder = member.rotationOrder;
   data.state.passQueue = data.state.passQueue.filter((id) => id !== member.id);
@@ -258,18 +291,19 @@ async function resetToSeed() {
 
 function render() {
   const current = memberById(data.state.currentMemberId);
+  if (current && !data.state.scheduled) syncScheduled(current);
   const scheduled = data.state.scheduled;
   $('admin-current-summary').innerHTML = current
     ? `<strong>${current.name}</strong> is Get Ready.` +
       (scheduled
-        ? ` Scheduled: <strong>${memberById(scheduled.memberId)?.name || 'Unknown'}</strong> on <strong>${scheduled.date}</strong>.`
+        ? ` Assigned: <strong>${scheduled.date}</strong> (${scheduled.weekday || current.assignedWeekday || 'Sunday'}).`
         : ' No hosting date scheduled yet.')
     : 'No current member selected.';
 
   const actions = $('admin-current-actions');
   actions.innerHTML = `
     ${scheduled ? '<button type="button" class="secondary" id="admin-confirm-hosted">Confirm hosted & advance</button>' : ''}
-    ${scheduled ? '<button type="button" class="ghost" id="admin-clear-schedule">Clear schedule</button>' : ''}
+    ${scheduled ? '<button type="button" class="ghost" id="admin-clear-schedule">Clear schedule pointer</button>' : ''}
   `;
   $('admin-confirm-hosted')?.addEventListener('click', confirmHosted);
   $('admin-clear-schedule')?.addEventListener('click', clearSchedule);
@@ -278,10 +312,11 @@ function render() {
   $('admin-member-table').innerHTML = members.map((member, index) => {
     const status = computeMemberStatus(member);
     const date = memberDate(member);
+    const weekday = member.assignedWeekday || 'Sunday';
     return `<tr class="${member.id === data.state.currentMemberId ? 'current' : ''}">
       <td data-label="Order">${index + 1}</td>
       <td data-label="Member" class="name-cell">${member.name}</td>
-      <td data-label="Status">${badge(status)}</td>
+      <td data-label="Status">${badge(status)} <span class="hint">${weekday}</span></td>
       <td data-label="Date">
         <input type="date" class="admin-date" data-member-id="${member.id}" value="${date}" aria-label="Date for ${member.name}" />
       </td>
@@ -289,6 +324,8 @@ function render() {
         <div class="admin-row-actions">
           <button type="button" class="ghost small" data-action="up" data-id="${member.id}" ${index === 0 ? 'disabled' : ''}>Up</button>
           <button type="button" class="ghost small" data-action="down" data-id="${member.id}" ${index === members.length - 1 ? 'disabled' : ''}>Down</button>
+          <button type="button" class="ghost small" data-action="sat" data-id="${member.id}">Sat</button>
+          <button type="button" class="ghost small" data-action="sun" data-id="${member.id}">Sun</button>
           <button type="button" class="secondary small" data-action="ready" data-id="${member.id}">Get Ready</button>
           <button type="button" class="ghost small" data-action="pass" data-id="${member.id}">${data.state.passQueue.includes(member.id) ? 'Unpass' : 'Pass'}</button>
           <button type="button" class="warn small" data-action="hosted" data-id="${member.id}">Mark hosted</button>
@@ -303,10 +340,12 @@ function render() {
       const action = button.dataset.action;
       if (action === 'up') moveMember(id, 'up');
       if (action === 'down') moveMember(id, 'down');
+      if (action === 'sat') setWeekendDay(id, 'Saturday');
+      if (action === 'sun') setWeekendDay(id, 'Sunday');
       if (action === 'ready') setGetReady(id);
       if (action === 'pass') togglePass(id);
       if (action === 'hosted') {
-        const dateInput = $(`admin-member-table`).querySelector(`.admin-date[data-member-id="${id}"]`);
+        const dateInput = $('admin-member-table').querySelector(`.admin-date[data-member-id="${id}"]`);
         markHostedNow(id, dateInput?.value);
       }
     });
@@ -382,6 +421,7 @@ async function bootAdmin() {
   }
 
   $('export-json')?.addEventListener('click', exportJson);
+  $('rebuild-schedule')?.addEventListener('click', rebuildQuarterlySchedule);
   $('reset-seed')?.addEventListener('click', () => {
     resetToSeed().catch((err) => {
       console.error(err);

@@ -3,7 +3,20 @@
   "round": 1,
   "mainPointerOrder": 1,
   "passQueue": [],
-  "scheduled": null,
+  "scheduled": {
+    "memberId": 3,
+    "date": "2026-09-06",
+    "status": "scheduled",
+    "weekday": "Sunday"
+  },
+  "scheduleRule": {
+    "intervalMonths": 3,
+    "week": "first",
+    "defaultWeekday": "Sunday",
+    "allowedWeekdays": ["Saturday", "Sunday"],
+    "startMonth": "2026-09",
+    "notes": "Agreed 2026-08-02: every three months, first week of the month, default Sunday, optional Sat/Sun change."
+  },
   "lastHostedMemberId": 2,
-  "updatedAt": "2026-08-02T14:00:00-07:00"
+  "updatedAt": "2026-08-03T15:45:00-07:00"
 }
