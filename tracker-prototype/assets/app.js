@@ -206,9 +206,10 @@ function render(data) {
   const weekday = current?.assignedWeekday || scheduled?.weekday || 'Sunday';
 
   $('current-summary').innerHTML = current
-    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong> <span class="current-inline-label">- you are next</span></span>${
+    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong></span>
+       <span class="current-inline-label">You are next</span>${
         scheduled
-          ? `<br><span class="scheduled-line">Assigned date: <strong>${scheduled.date}</strong> (${weekday})</span>`
+          ? `<span class="scheduled-line">Assigned date: <strong>${scheduled.date}</strong> (${weekday})</span>`
           : ''
       }`
     : 'No current member selected.';
@@ -218,33 +219,33 @@ function render(data) {
   $('current-actions').innerHTML = `
     <div class="option-group">
       <p class="option-label">1. Weekend day</p>
-      <div class="actions">
+      <div class="actions pair-actions">
         <button type="button" class="ghost" id="set-saturday" ${weekday === 'Saturday' ? 'disabled' : ''}>Saturday</button>
         <button type="button" class="ghost" id="set-sunday" ${weekday === 'Sunday' ? 'disabled' : ''}>Sunday</button>
       </div>
     </div>
     <div class="option-group">
       <p class="option-label">2. Move by one week</p>
-      <div class="actions">
-        <button type="button" class="ghost" id="week-earlier">One week earlier</button>
-        <button type="button" class="ghost" id="week-later">One week later</button>
+      <div class="actions pair-actions">
+        <button type="button" class="ghost" id="week-earlier">1 week earlier</button>
+        <button type="button" class="ghost" id="week-later">1 week later</button>
       </div>
     </div>
     <div class="option-group">
-      <p class="option-label">3. Emergency swap with another family</p>
+      <p class="option-label">3. Emergency swap</p>
       <div class="actions swap-actions">
         <select id="swap-member" aria-label="Swap date with member">
           <option value="">Choose member…</option>
-          ${others.map((m) => `<option value="${m.id}">${m.name} (${m.assignedHostDate})</option>`).join('')}
+          ${others.map((m) => `<option value="${m.id}">${m.name} · ${m.assignedHostDate}</option>`).join('')}
         </select>
         <button type="button" class="secondary" id="swap-button">Swap dates</button>
       </div>
     </div>
     <div class="option-group">
       <p class="option-label">Turn actions</p>
-      <div class="actions">
+      <div class="actions pair-actions">
         <button type="button" class="secondary" id="confirm-hosted">Confirm hosted</button>
-        <button type="button" class="warn" id="pass-button">I will pass</button>
+        <button type="button" class="warn" id="pass-button">Pass</button>
       </div>
     </div>
   `;
