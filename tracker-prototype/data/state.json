@@ -5,7 +5,7 @@
   "passQueue": [],
   "scheduled": {
     "memberId": 3,
-    "date": "2026-09-06",
+    "date": "2026-11-01",
     "status": "scheduled",
     "weekday": "Sunday"
   },
@@ -14,9 +14,9 @@
     "week": "first",
     "defaultWeekday": "Sunday",
     "allowedWeekdays": ["Saturday", "Sunday"],
-    "startMonth": "2026-09",
-    "notes": "Agreed 2026-08-02: every three months, first week of the month, default Sunday, optional Sat/Sun change."
+    "startMonth": "2026-11",
+    "notes": "Agreed 2026-08-02: every three months from ~3 months after Aug 3 2026, first week Sunday default, optional Sat/Sun change. Hana starts 2026-11-01."
   },
   "lastHostedMemberId": 2,
-  "updatedAt": "2026-08-03T15:45:00-07:00"
+  "updatedAt": "2026-08-03T15:47:00-07:00"
 }

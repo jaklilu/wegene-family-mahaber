@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v5';
+const STORAGE_KEY = 'wegene-tracker-mvp-v6';
 const AUTH = window.WegeneAuth;
 const SCHEDULE = window.WegeneSchedule;
 

@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v5';
+const STORAGE_KEY = 'wegene-tracker-mvp-v6';
 const SCHEDULE = window.WegeneSchedule;
 
 const $ = (id) => document.getElementById(id);
@@ -166,9 +166,9 @@ function setWeekendDay(memberId, weekday) {
 
 function rebuildQuarterlySchedule() {
   if (!SCHEDULE) return showMessage('Schedule helper failed to load.', true);
-  if (!confirm('Rebuild all assigned dates from the current rotation order? This starts September 2026 and assigns every 3 months on the first Sunday.')) return;
+  if (!confirm('Rebuild all assigned dates from the current rotation order? This starts November 2026 (3 months from Aug 3) and assigns every 3 months on the first Sunday.')) return;
   SCHEDULE.assignQuarterlyDates(data.members, {
-    startMonth: '2026-09',
+    startMonth: '2026-11',
     intervalMonths: 3,
     defaultWeekday: 'Sunday'
   });
@@ -177,8 +177,8 @@ function rebuildQuarterlySchedule() {
     week: 'first',
     defaultWeekday: 'Sunday',
     allowedWeekdays: ['Saturday', 'Sunday'],
-    startMonth: '2026-09',
-    notes: 'Agreed 2026-08-02: every three months, first week of the month, default Sunday, optional Sat/Sun change.'
+    startMonth: '2026-11',
+    notes: 'Agreed 2026-08-02: every three months from ~3 months after Aug 3 2026, first week Sunday default, optional Sat/Sun change. Hana starts 2026-11-01.'
   };
   const current = memberById(data.state.currentMemberId);
   syncScheduled(current);
