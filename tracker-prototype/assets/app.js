@@ -284,6 +284,7 @@ function render(data) {
 
 async function boot() {
   await setupLoginGate();
+  if (window.WegeneMenu) window.WegeneMenu.setupMenu('menu-toggle', 'site-menu');
   $('logout-button').addEventListener('click', () => {
     AUTH.clearSession('member');
     location.reload();

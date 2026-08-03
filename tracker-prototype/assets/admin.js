@@ -472,6 +472,8 @@ async function bootAdmin() {
     location.reload();
   });
 
+  if (window.WegeneMenu) window.WegeneMenu.setupMenu('menu-toggle', 'site-menu');
+
   const seed = await loadSeedData();
   data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || seed;
   if (!Array.isArray(data.members) || !data.state || !Array.isArray(data.history)) {

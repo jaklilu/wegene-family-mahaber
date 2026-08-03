@@ -21,14 +21,27 @@
   </section>
 
   <div id="app-shell" hidden>
-  <header>
+  <div class="menu-bar">
+    <div class="menu-bar-inner">
+      <a class="menu-brand" href="index.html">
+        <img class="menu-logo" src="assets/images/wegene-logo.png" alt="" />
+        <span>Wegene</span>
+      </a>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">
+        <span class="menu-toggle-bars" aria-hidden="true"></span>
+        <span class="menu-toggle-label">Menu</span>
+      </button>
+      <nav class="site-menu" id="site-menu" aria-label="Main">
+        <a href="index.html" class="is-active" aria-current="page">Tracker</a>
+        <a href="admin.html">Admin tools</a>
+        <button class="menu-logout" id="logout-button" type="button">Log out</button>
+      </nav>
+    </div>
+  </div>
+
+  <header class="page-header">
     <img class="site-logo header-logo" src="assets/images/wegene-logo.png" alt="Wegene logo" />
     <h1>Wegene Family Mahaber Tracker</h1>
-    <nav>
-      <a href="index.html">Tracker</a>
-      <a href="admin.html">Admin tools</a>
-      <button class="ghost small" id="logout-button" type="button">Log out</button>
-    </nav>
   </header>
 
   <main class="stack">
@@ -78,6 +91,7 @@
   </div>
   <script src="assets/config.js"></script>
   <script src="assets/auth.js"></script>
+  <script src="assets/nav.js"></script>
   <script src="assets/schedule.js"></script>
   <script src="assets/app.js"></script>
 </body>
