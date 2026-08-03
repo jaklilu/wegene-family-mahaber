@@ -165,9 +165,11 @@ function render(data) {
   $('current-actions').innerHTML = `
     <div class="option-group">
       <p class="option-label">1. Weekend day</p>
-      <div class="actions pair-actions">
-        <button type="button" class="ghost" id="set-saturday" ${weekday === 'Saturday' ? 'disabled' : ''}>Saturday</button>
-        <button type="button" class="ghost" id="set-sunday" ${weekday === 'Sunday' ? 'disabled' : ''}>Sunday</button>
+      <p class="hint weekend-hint">Set on <strong>${weekday}</strong> by default.</p>
+      <div class="actions">
+        ${weekday === 'Sunday'
+          ? '<button type="button" class="ghost" id="toggle-weekend">Change to Saturday</button>'
+          : '<button type="button" class="ghost" id="toggle-weekend">Change back to Sunday</button>'}
       </div>
     </div>
     <div class="option-group">
@@ -189,8 +191,9 @@ function render(data) {
     </div>
   `;
 
-  $('set-saturday')?.addEventListener('click', () => setWeekendDay(data, 'Saturday'));
-  $('set-sunday')?.addEventListener('click', () => setWeekendDay(data, 'Sunday'));
+  $('toggle-weekend')?.addEventListener('click', () => {
+    setWeekendDay(data, weekday === 'Sunday' ? 'Saturday' : 'Sunday');
+  });
   $('week-earlier')?.addEventListener('click', () => shiftCurrentByWeeks(data, -1));
   $('week-later')?.addEventListener('click', () => shiftCurrentByWeeks(data, 1));
   $('swap-button')?.addEventListener('click', () => {

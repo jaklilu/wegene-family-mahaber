@@ -366,8 +366,7 @@ function render() {
         <div class="admin-row-actions">
           <button type="button" class="ghost small" data-action="up" data-id="${member.id}" ${index === 0 ? 'disabled' : ''}>Up</button>
           <button type="button" class="ghost small" data-action="down" data-id="${member.id}" ${index === members.length - 1 ? 'disabled' : ''}>Down</button>
-          <button type="button" class="ghost small" data-action="sat" data-id="${member.id}">Sat</button>
-          <button type="button" class="ghost small" data-action="sun" data-id="${member.id}">Sun</button>
+          <button type="button" class="ghost small" data-action="weekend" data-id="${member.id}">${weekday === 'Sunday' ? '→ Sat' : '→ Sun'}</button>
           <button type="button" class="ghost small" data-action="week-earlier" data-id="${member.id}">-1 week</button>
           <button type="button" class="ghost small" data-action="week-later" data-id="${member.id}">+1 week</button>
           <button type="button" class="secondary small" data-action="ready" data-id="${member.id}">Get Ready</button>
@@ -391,8 +390,7 @@ function render() {
       const action = button.dataset.action;
       if (action === 'up') moveMember(id, 'up');
       if (action === 'down') moveMember(id, 'down');
-      if (action === 'sat') setWeekendDay(id, 'Saturday');
-      if (action === 'sun') setWeekendDay(id, 'Sunday');
+      if (action === 'weekend') setWeekendDay(id, (memberById(id)?.assignedWeekday || 'Sunday') === 'Sunday' ? 'Saturday' : 'Sunday');
       if (action === 'week-earlier') shiftMemberByWeeks(id, -1);
       if (action === 'week-later') shiftMemberByWeeks(id, 1);
       if (action === 'ready') setGetReady(id);

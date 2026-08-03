@@ -271,6 +271,10 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
   font-weight: 850;
   font-size: .95rem;
 }
+.weekend-hint {
+  margin: 0 0 10px;
+  font-size: .92rem;
+}
 .pair-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
