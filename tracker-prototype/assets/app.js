@@ -159,7 +159,11 @@ function render(data) {
   const weekday = current?.assignedWeekday || scheduled?.weekday || 'Sunday';
 
   $('current-summary').innerHTML = current
-    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong> <span class="current-inline-label">- You Are Next</span></span>`
+    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong> <span class="current-inline-label">- You Are Next</span></span>${
+        scheduled
+          ? `<span class="scheduled-line">${prettyDate(scheduled.date)}</span>`
+          : ''
+      }`
     : 'No current member selected.';
 
   const others = sortedActiveMembers(data).filter((m) => m.id !== current?.id && m.assignedHostDate);

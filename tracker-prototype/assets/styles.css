@@ -257,7 +257,13 @@ tr:last-child td { border-bottom:0; }
   letter-spacing: -0.04em;
   white-space: nowrap;
 }
-.scheduled-line { display:block; margin-top:8px; color: var(--muted); }
+.scheduled-line {
+  display: block;
+  margin-top: 8px;
+  color: var(--green-dark);
+  font-size: 1.15rem;
+  font-weight: 850;
+}
 button, input, select, textarea { font: inherit; }
 button {
   border: 0;
