@@ -124,23 +124,25 @@ function shiftCurrentByWeeks(data, weeks) {
   showMessage(`${current.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${prettyDate(shifted.date)}.`);
 }
 
-function emergencySwap(data, otherMemberId) {
+function hideSwapConfirm() {
+  const panel = $('swap-confirm');
+  if (panel) panel.hidden = true;
+}
+
+function showSwapConfirm(other) {
+  const panel = $('swap-confirm');
+  const text = $('swap-confirm-text');
+  if (!panel || !text) return;
+  text.textContent = `Have you confirmed this date swap with ${other.name}?`;
+  panel.hidden = false;
+}
+
+function applyEmergencySwap(data, otherMemberId) {
   const current = memberById(data, data.state.currentMemberId);
   const other = memberById(data, Number(otherMemberId));
   if (!current || !other || !SCHEDULE) return;
   if (!current.assignedHostDate || !other.assignedHostDate) {
     return showMessage('Both members need an assigned date to swap.');
-  }
-
-  const confirmed = confirm(
-    `Have you confirmed this date swap with ${other.name}?\n\n` +
-    `${current.name}: ${prettyDate(current.assignedHostDate)}\n` +
-    `${other.name}: ${prettyDate(other.assignedHostDate)}\n\n` +
-    `Yes = OK\nNo = Cancel`
-  );
-  if (!confirmed) {
-    showMessage(`Swap cancelled. Confirm with ${other.name} first.`);
-    return;
   }
 
   SCHEDULE.swapAssignedDates(current, other);
@@ -150,8 +152,36 @@ function emergencySwap(data, otherMemberId) {
   data.state.passQueue = data.state.passQueue.filter((id) => id !== current.id && id !== other.id);
   syncScheduled(data, earlier);
   save(data);
+  hideSwapConfirm();
   render(data);
   showMessage(`Swapped dates between ${current.name} and ${other.name}. ${earlier.name} is now Get Ready for ${prettyDate(earlier.assignedHostDate)}.`);
+}
+
+function requestEmergencySwap(data, otherMemberId) {
+  const other = memberById(data, Number(otherMemberId));
+  if (!other) return showMessage('Choose a family member to swap with first.');
+  if (!other.assignedHostDate) return showMessage('Both members need an assigned date to swap.');
+
+  showSwapConfirm(other);
+
+  const yes = $('swap-yes');
+  const no = $('swap-no');
+  if (!yes || !no) return;
+
+  const onYes = () => {
+    yes.removeEventListener('click', onYes);
+    no.removeEventListener('click', onNo);
+    applyEmergencySwap(data, otherMemberId);
+  };
+  const onNo = () => {
+    yes.removeEventListener('click', onYes);
+    no.removeEventListener('click', onNo);
+    hideSwapConfirm();
+    showMessage(`Swap cancelled. Confirm with ${other.name} first.`);
+  };
+
+  yes.addEventListener('click', onYes);
+  no.addEventListener('click', onNo);
 }
 
 function renderAvatar(member) {
@@ -197,7 +227,7 @@ function render(data) {
   $('swap-button')?.addEventListener('click', () => {
     const value = $('swap-member')?.value;
     if (!value) return showMessage('Choose a family member to swap with first.');
-    emergencySwap(data, value);
+    requestEmergencySwap(data, value);
   });
 
   const activeMembers = sortedActiveMembers(data);

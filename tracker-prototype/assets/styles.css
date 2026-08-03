@@ -327,6 +327,30 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
   min-height: 56px;
   height: 100%;
 }
+.swap-confirm {
+  background: rgba(255,255,255,.7);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  text-align: center;
+}
+.swap-confirm p {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-weight: 850;
+  font-size: 1.05rem;
+}
+.swap-confirm-actions {
+  justify-content: center;
+}
+.swap-confirm-actions button {
+  min-height: 56px;
+}
+.yes-button {
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  color: #fff;
+}
+#swap-confirm[hidden] { display: none !important; }
 .pair-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
