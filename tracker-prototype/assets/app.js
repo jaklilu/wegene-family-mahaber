@@ -35,6 +35,7 @@ function badge(status) {
     hosted: ['hosted', 'Hosted'],
     ready: ['ready', 'Get Ready'],
     scheduled: ['scheduled', 'Scheduled'],
+    confirmed: ['confirmed', 'Confirmed'],
     passed: ['passed', 'Passed'],
     waiting: ['waiting', 'Waiting']
   };
@@ -52,7 +53,7 @@ function sortedActiveMembers(data) {
     .sort((a, b) => a.rotationOrder - b.rotationOrder);
 }
 
-function syncScheduled(data, member) {
+function syncScheduled(data, member, options = {}) {
   if (!member?.assignedHostDate) {
     data.state.scheduled = null;
     return;
@@ -60,13 +61,20 @@ function syncScheduled(data, member) {
   data.state.scheduled = {
     memberId: member.id,
     date: member.assignedHostDate,
-    status: 'scheduled',
-    weekday: member.assignedWeekday || 'Sunday'
+    status: member.dateConfirmed ? 'confirmed' : 'scheduled',
+    weekday: member.assignedWeekday || 'Sunday',
+    confirmed: Boolean(member.dateConfirmed)
   };
+  if (options.confirm) {
+    member.dateConfirmed = true;
+    data.state.scheduled.confirmed = true;
+    data.state.scheduled.status = 'confirmed';
+  }
 }
 
 function computeMemberStatus(data, member) {
   if (data.state.passQueue.includes(member.id)) return 'passed';
+  if (member.dateConfirmed) return 'confirmed';
   if (data.state.currentMemberId === member.id) return 'ready';
   if (member.assignedHostDate) return 'scheduled';
   if (data.history.some((h) => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted')) {
@@ -110,7 +118,7 @@ function setWeekendDay(data, weekday) {
     onConfirm: () => {
       current.assignedHostDate = nextDate;
       current.assignedWeekday = weekday;
-      syncScheduled(data, current);
+      syncScheduled(data, current, { confirm: true });
       save(data);
       hideDateConfirm();
       render(data);
@@ -128,7 +136,7 @@ function shiftCurrentByWeeks(data, weeks) {
     onConfirm: () => {
       current.assignedHostDate = shifted.date;
       current.assignedWeekday = shifted.weekday;
-      syncScheduled(data, current);
+      syncScheduled(data, current, { confirm: true });
       save(data);
       hideDateConfirm();
       render(data);
@@ -186,6 +194,8 @@ function applyEmergencySwap(data, otherMemberId) {
   }
 
   SCHEDULE.swapAssignedDates(current, other);
+  current.dateConfirmed = false;
+  other.dateConfirmed = false;
   const earlier = current.assignedHostDate <= other.assignedHostDate ? current : other;
   data.state.currentMemberId = earlier.id;
   data.state.mainPointerOrder = earlier.rotationOrder;
@@ -234,7 +244,7 @@ function render(data) {
 
   $('current-summary').innerHTML = current
     ? `${scheduled ? `<span class="scheduled-line">${prettyDate(scheduled.date)}</span>` : ''}
-       <span class="current-person"><strong>${current.name}</strong> <span class="current-inline-label">- You Are Next</span></span>`
+       <span class="current-person"><strong>${current.name}</strong> <span class="current-inline-label">- ${current.dateConfirmed ? 'Confirmed' : 'You Are Next'}</span></span>`
     : 'No current member selected.';
 
   const others = sortedActiveMembers(data).filter((m) => m.id !== current?.id && m.assignedHostDate);

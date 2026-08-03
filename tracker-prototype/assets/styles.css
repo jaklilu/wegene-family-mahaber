@@ -231,6 +231,7 @@ ol, ul { color: var(--muted); line-height: 1.55; padding-left: 1.3rem; }
 .badge.ready { background:#fff1c8; color:#7b5700; }
 .badge.hosted { background:#dbf7e7; color:#0d6133; }
 .badge.scheduled { background:#dcecff; color:#145789; }
+.badge.confirmed { background:#c9f5d7; color:#08672f; }
 .badge.passed { background:#ffe2df; color:#882821; }
 .member-table-wrap { width: 100%; overflow-x:auto; border-radius: 18px; border:1px solid var(--line); background: rgba(255,255,255,.68); -webkit-overflow-scrolling: touch; }
 .member-list { width:100%; border-collapse: collapse; min-width: 620px; }
