@@ -204,7 +204,6 @@ function applyEmergencySwap(data, otherMemberId) {
   save(data);
   hideSwapConfirm();
   render(data);
-  showMessage(`Swapped dates between ${current.name} and ${other.name}. ${earlier.name} is now Get Ready for ${prettyDate(earlier.assignedHostDate)}.`);
 }
 
 function requestEmergencySwap(data, otherMemberId) {
