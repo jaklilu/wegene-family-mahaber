@@ -212,6 +212,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 44px; }
 .current-card { text-align:center; }
 .current-card .current-person { justify-content:center; }
 .current-card .actions { justify-content:center; }
+.current-card .scheduled-line {
+  text-align: center;
+  font-weight: 950;
+}
 .stack { display:grid; gap:16px; }
 .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; }
 h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.75rem); line-height: .98; }
@@ -262,7 +266,8 @@ tr:last-child td { border-bottom:0; }
   margin-top: 8px;
   color: var(--green-dark);
   font-size: 1.15rem;
-  font-weight: 850;
+  font-weight: 950;
+  text-align: center;
 }
 button, input, select, textarea { font: inherit; }
 button {
@@ -447,8 +452,12 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
     box-shadow: 0 12px 28px rgba(19, 55, 34, 0.12);
   }
   .grid { grid-template-columns: 1fr; gap: 12px; }
-  .current-card { text-align: left; }
-  .current-card .current-person { justify-content: flex-start; }
+  .current-card { text-align: center; }
+  .current-card .current-person { justify-content: center; }
+  .current-card .scheduled-line {
+    text-align: center;
+    font-weight: 950;
+  }
   #current-summary { margin: 0; }
   .current-person {
     font-size: clamp(1.45rem, 7.5vw, 2rem);
