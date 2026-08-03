@@ -145,55 +145,6 @@ function emergencySwap(data, otherMemberId) {
   showMessage(`Swapped dates between ${current.name} and ${other.name}. ${earlier.name} is now Get Ready for ${earlier.assignedHostDate}.`);
 }
 
-function passCurrentMember(data) {
-  const current = memberById(data, data.state.currentMemberId);
-  if (!current) return;
-  if (!confirm(`${current.name} will pass and move into the pass queue. Continue?`)) return;
-  if (!data.state.passQueue.includes(current.id)) data.state.passQueue.push(current.id);
-  const next = nextInMainOrder(data, current.rotationOrder);
-  data.state.currentMemberId = next.id;
-  data.state.mainPointerOrder = next.rotationOrder;
-  syncScheduled(data, next);
-  save(data);
-  render(data);
-  showMessage(`${current.name} was added to the pass queue. ${next.name} is now Get Ready.`);
-}
-
-function confirmHosted(data) {
-  const current = memberById(data, data.state.currentMemberId);
-  const scheduled = data.state.scheduled || (current?.assignedHostDate
-    ? { memberId: current.id, date: current.assignedHostDate, status: 'scheduled' }
-    : null);
-  if (!scheduled) return showMessage('No assigned hosting date to confirm.');
-  const hostedMember = memberById(data, scheduled.memberId);
-  data.history.unshift({
-    id: `hist-${Date.now()}`,
-    memberId: hostedMember.id,
-    memberName: hostedMember.name,
-    hostingDate: scheduled.date,
-    round: data.state.round,
-    status: 'hosted',
-    notes: 'Confirmed from assigned quarterly schedule.'
-  });
-  data.state.lastHostedMemberId = hostedMember.id;
-  const hostedOrder = hostedMember.rotationOrder;
-  const maxOrder = Math.max(...sortedActiveMembers(data).map((member) => member.rotationOrder));
-  let next;
-  if (data.state.passQueue.length) {
-    const nextId = data.state.passQueue.shift();
-    next = memberById(data, nextId);
-  } else {
-    next = nextInMainOrder(data, hostedOrder);
-  }
-  hostedMember.rotationOrder = maxOrder + 1;
-  data.state.currentMemberId = next.id;
-  data.state.mainPointerOrder = next.rotationOrder;
-  syncScheduled(data, next);
-  save(data);
-  render(data);
-  showMessage(`${hostedMember.name} marked hosted. ${next.name} is now Get Ready${data.state.passQueue.length ? ' from the pass queue' : ''}.`);
-}
-
 function renderAvatar(member) {
   if (member.photo) return `<span class="avatar"><img src="${member.photo}" alt="${member.name}" /></span>`;
   return `<span class="avatar" aria-hidden="true">${getInitials(member.name)}</span>`;
@@ -241,13 +192,6 @@ function render(data) {
         <button type="button" class="secondary" id="swap-button">Swap dates</button>
       </div>
     </div>
-    <div class="option-group">
-      <p class="option-label">Turn actions</p>
-      <div class="actions pair-actions">
-        <button type="button" class="secondary" id="confirm-hosted">Confirm hosted</button>
-        <button type="button" class="warn" id="pass-button">Pass</button>
-      </div>
-    </div>
   `;
 
   $('set-saturday')?.addEventListener('click', () => setWeekendDay(data, 'Saturday'));
@@ -259,8 +203,6 @@ function render(data) {
     if (!value) return showMessage('Choose a family member to swap with first.');
     emergencySwap(data, value);
   });
-  $('confirm-hosted')?.addEventListener('click', () => confirmHosted(data));
-  $('pass-button')?.addEventListener('click', () => passCurrentMember(data));
 
   const activeMembers = sortedActiveMembers(data);
   $('member-table').innerHTML = activeMembers.map((member, index) => {
