@@ -168,20 +168,17 @@ function requestEmergencySwap(data, otherMemberId) {
   const no = $('swap-no');
   if (!yes || !no) return;
 
-  const onYes = () => {
-    yes.removeEventListener('click', onYes);
-    no.removeEventListener('click', onNo);
+  yes.onclick = () => {
+    yes.onclick = null;
+    no.onclick = null;
     applyEmergencySwap(data, otherMemberId);
   };
-  const onNo = () => {
-    yes.removeEventListener('click', onYes);
-    no.removeEventListener('click', onNo);
+  no.onclick = () => {
+    yes.onclick = null;
+    no.onclick = null;
     hideSwapConfirm();
     showMessage(`Swap cancelled. Confirm with ${other.name} first.`);
   };
-
-  yes.addEventListener('click', onYes);
-  no.addEventListener('click', onNo);
 }
 
 function renderAvatar(member) {
