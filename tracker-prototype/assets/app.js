@@ -243,7 +243,8 @@ function render(data) {
   const weekday = current?.assignedWeekday || scheduled?.weekday || 'Sunday';
 
   $('current-summary').innerHTML = current
-    ? `${scheduled ? `<span class="scheduled-line">${prettyDate(scheduled.date)}</span>` : ''}
+    ? `<span class="mahaber-label">Our next mahaber is...</span>
+       ${scheduled ? `<span class="scheduled-line">${prettyDate(scheduled.date)}</span>` : ''}
        <span class="current-person"><strong>${current.name}</strong> <span class="current-inline-label">- ${current.dateConfirmed ? 'Confirmed' : 'You Are Next'}</span></span>`
     : 'No current member selected.';
 
