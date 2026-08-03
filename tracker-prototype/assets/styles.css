@@ -263,7 +263,7 @@ tr:last-child td { border-bottom:0; }
 }
 .scheduled-line {
   display: block;
-  margin-top: 10px;
+  margin: 0 0 8px;
   color: var(--green-dark);
   font-size: clamp(2.1rem, 7vw, 3.1rem);
   font-weight: 950;
