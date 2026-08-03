@@ -159,8 +159,7 @@ function render(data) {
   const weekday = current?.assignedWeekday || scheduled?.weekday || 'Sunday';
 
   $('current-summary').innerHTML = current
-    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong></span>
-       <span class="current-inline-label">You are next</span>${
+    ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong> <span class="current-inline-label">- You Are Next</span></span>${
         scheduled
           ? `<span class="scheduled-line">Assigned date: <strong>${prettyDate(scheduled.date)}</strong></span>`
           : ''
