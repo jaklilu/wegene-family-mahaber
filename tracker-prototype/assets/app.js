@@ -52,11 +52,6 @@ function sortedActiveMembers(data) {
     .sort((a, b) => a.rotationOrder - b.rotationOrder);
 }
 
-function nextInMainOrder(data, afterOrder) {
-  const members = sortedActiveMembers(data);
-  return members.find((m) => m.rotationOrder > afterOrder) || members[0];
-}
-
 function syncScheduled(data, member) {
   if (!member?.assignedHostDate) {
     data.state.scheduled = null;
