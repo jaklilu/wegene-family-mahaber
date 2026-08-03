@@ -197,14 +197,9 @@ function render(data) {
     const status = computeMemberStatus(data, member);
     return `<tr class="${member.id === data.state.currentMemberId ? 'current' : ''}">
       <td data-label="Order">${index + 1}</td>
-      <td data-label="Member" class="name-cell">
-        ${renderAvatar(member)}
-        <span class="member-meta">
-          <span class="date-cell">${displayDate(data, member)}</span>
-          <span class="member-name">${member.name}</span>
-        </span>
-      </td>
+      <td data-label="Member" class="name-cell">${renderAvatar(member)} ${member.name}</td>
       <td data-label="Status">${badge(status)}</td>
+      <td data-label="Date" class="date-cell">${displayDate(data, member)}</td>
     </tr>`;
   }).join('');
 
