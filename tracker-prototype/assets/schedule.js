@@ -94,10 +94,17 @@
     return ordered;
   }
 
+  function formatDisplayDate(isoDate) {
+    if (!isoDate) return '—';
+    const date = parseISODate(isoDate);
+    if (Number.isNaN(date.getTime())) return isoDate;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${weekdayName(date)} ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  }
+
   function formatAssignedLabel(member) {
     if (!member?.assignedHostDate) return '—';
-    const weekday = member.assignedWeekday || weekdayName(parseISODate(member.assignedHostDate));
-    return `${member.assignedHostDate} (${weekday})`;
+    return formatDisplayDate(member.assignedHostDate);
   }
 
   window.WegeneSchedule = {
@@ -109,6 +116,7 @@
     shiftByWeeks,
     swapAssignedDates,
     assignQuarterlyDates,
+    formatDisplayDate,
     formatAssignedLabel
   };
 }());

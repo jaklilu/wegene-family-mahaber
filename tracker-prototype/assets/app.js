@@ -77,9 +77,12 @@ function computeMemberStatus(data, member) {
 
 function displayDate(data, member) {
   if (member.assignedHostDate && SCHEDULE) return SCHEDULE.formatAssignedLabel(member);
-  if (data.state.scheduled?.memberId === member.id) return data.state.scheduled.date;
+  if (data.state.scheduled?.memberId === member.id) {
+    return SCHEDULE ? SCHEDULE.formatDisplayDate(data.state.scheduled.date) : data.state.scheduled.date;
+  }
   const hist = data.history.find((h) => h.memberId === member.id && h.round === data.state.round && h.status === 'hosted');
-  return hist?.hostingDate || '—';
+  if (!hist?.hostingDate) return '—';
+  return SCHEDULE ? SCHEDULE.formatDisplayDate(hist.hostingDate) : hist.hostingDate;
 }
 
 function save(data) {
@@ -93,6 +96,10 @@ function showMessage(text) {
   box.hidden = false;
 }
 
+function prettyDate(isoDate) {
+  return SCHEDULE ? SCHEDULE.formatDisplayDate(isoDate) : isoDate;
+}
+
 function setWeekendDay(data, weekday) {
   const current = memberById(data, data.state.currentMemberId);
   if (!current?.assignedHostDate || !SCHEDULE) return;
@@ -102,7 +109,7 @@ function setWeekendDay(data, weekday) {
   syncScheduled(data, current);
   save(data);
   render(data);
-  showMessage(`${current.name}'s hosting date set to ${nextDate} (${weekday}).`);
+  showMessage(`${current.name}'s hosting date set to ${prettyDate(nextDate)}.`);
 }
 
 function shiftCurrentByWeeks(data, weeks) {
@@ -114,7 +121,7 @@ function shiftCurrentByWeeks(data, weeks) {
   syncScheduled(data, current);
   save(data);
   render(data);
-  showMessage(`${current.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${shifted.date} (${shifted.weekday}).`);
+  showMessage(`${current.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${prettyDate(shifted.date)}.`);
 }
 
 function emergencySwap(data, otherMemberId) {
@@ -125,7 +132,7 @@ function emergencySwap(data, otherMemberId) {
     return showMessage('Both members need an assigned date to swap.');
   }
   if (!confirm(
-    `Emergency swap?\n\n${current.name}: ${current.assignedHostDate}\n${other.name}: ${other.assignedHostDate}\n\n` +
+    `Emergency swap?\n\n${current.name}: ${prettyDate(current.assignedHostDate)}\n${other.name}: ${prettyDate(other.assignedHostDate)}\n\n` +
     `They will exchange dates and places in the order. The person with the earlier date becomes Get Ready.`
   )) return;
 
@@ -137,7 +144,7 @@ function emergencySwap(data, otherMemberId) {
   syncScheduled(data, earlier);
   save(data);
   render(data);
-  showMessage(`Swapped dates between ${current.name} and ${other.name}. ${earlier.name} is now Get Ready for ${earlier.assignedHostDate}.`);
+  showMessage(`Swapped dates between ${current.name} and ${other.name}. ${earlier.name} is now Get Ready for ${prettyDate(earlier.assignedHostDate)}.`);
 }
 
 function renderAvatar(member) {
@@ -155,7 +162,7 @@ function render(data) {
     ? `<span class="current-person">${renderAvatar(current)} <strong>${current.name}</strong></span>
        <span class="current-inline-label">You are next</span>${
         scheduled
-          ? `<span class="scheduled-line">Assigned date: <strong>${scheduled.date}</strong> (${weekday})</span>`
+          ? `<span class="scheduled-line">Assigned date: <strong>${prettyDate(scheduled.date)}</strong></span>`
           : ''
       }`
     : 'No current member selected.';
@@ -184,7 +191,7 @@ function render(data) {
       <div class="actions swap-actions">
         <select id="swap-member" aria-label="Swap date with member">
           <option value="">Choose member…</option>
-          ${others.map((m) => `<option value="${m.id}">${m.name} · ${m.assignedHostDate}</option>`).join('')}
+          ${others.map((m) => `<option value="${m.id}">${m.name} · ${prettyDate(m.assignedHostDate)}</option>`).join('')}
         </select>
         <button type="button" class="secondary" id="swap-button">Swap dates</button>
       </div>

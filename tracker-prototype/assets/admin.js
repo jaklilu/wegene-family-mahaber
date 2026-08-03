@@ -86,6 +86,10 @@ function showMessage(text, isError = false) {
   box.classList.toggle('notice', !isError);
 }
 
+function prettyDate(isoDate) {
+  return SCHEDULE ? SCHEDULE.formatDisplayDate(isoDate) : isoDate || '—';
+}
+
 function nextInMainOrder(afterOrder) {
   const members = sortedActiveMembers();
   return members.find((m) => m.rotationOrder > afterOrder) || members[0];
@@ -116,7 +120,7 @@ function setGetReady(memberId) {
   syncScheduled(member);
   save();
   render();
-  showMessage(`${member.name} is now Get Ready${member.assignedHostDate ? ` for ${member.assignedHostDate}` : ''}.`);
+  showMessage(`${member.name} is now Get Ready${member.assignedHostDate ? ` for ${prettyDate(member.assignedHostDate)}` : ''}.`);
 }
 
 function togglePass(memberId) {
@@ -148,7 +152,7 @@ function updateMemberDate(memberId, dateValue) {
   }
   save();
   render();
-  showMessage(`Updated assigned date for ${member.name} to ${dateValue}.`);
+  showMessage(`Updated assigned date for ${member.name} to ${prettyDate(dateValue)}.`);
 }
 
 function setWeekendDay(memberId, weekday) {
@@ -161,7 +165,7 @@ function setWeekendDay(memberId, weekday) {
   }
   save();
   render();
-  showMessage(`${member.name} set to ${member.assignedHostDate} (${weekday}).`);
+  showMessage(`${member.name} set to ${prettyDate(member.assignedHostDate)}.`);
 }
 
 function shiftMemberByWeeks(memberId, weeks) {
@@ -175,7 +179,7 @@ function shiftMemberByWeeks(memberId, weeks) {
   }
   save();
   render();
-  showMessage(`${member.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${shifted.date}.`);
+  showMessage(`${member.name} moved ${weeks < 0 ? 'one week earlier' : 'one week later'} to ${prettyDate(shifted.date)}.`);
 }
 
 function emergencySwap(memberId, otherMemberId) {
@@ -186,7 +190,7 @@ function emergencySwap(memberId, otherMemberId) {
     return showMessage('Both members need an assigned date to swap.', true);
   }
   if (!confirm(
-    `Emergency swap?\n\n${member.name}: ${member.assignedHostDate}\n${other.name}: ${other.assignedHostDate}\n\n` +
+    `Emergency swap?\n\n${member.name}: ${prettyDate(member.assignedHostDate)}\n${other.name}: ${prettyDate(other.assignedHostDate)}\n\n` +
     `They will exchange dates and places. Earlier date becomes Get Ready.`
   )) return;
 
@@ -199,7 +203,7 @@ function emergencySwap(memberId, otherMemberId) {
   syncScheduled(earlier);
   save();
   render();
-  showMessage(`Swapped ${member.name} and ${other.name}. ${earlier.name} is Get Ready for ${earlier.assignedHostDate}.`);
+  showMessage(`Swapped ${member.name} and ${other.name}. ${earlier.name} is Get Ready for ${prettyDate(earlier.assignedHostDate)}.`);
 }
 
 function rebuildQuarterlySchedule() {
@@ -301,7 +305,7 @@ function updateHistoryDate(historyId, dateValue) {
 function removeHistory(historyId) {
   const item = data.history.find((h) => h.id === historyId);
   if (!item) return;
-  if (!confirm(`Remove history entry for ${item.memberName} on ${item.hostingDate}?`)) return;
+  if (!confirm(`Remove history entry for ${item.memberName} on ${prettyDate(item.hostingDate)}?`)) return;
   data.history = data.history.filter((h) => h.id !== historyId);
   save();
   render();
@@ -334,7 +338,7 @@ function render() {
   $('admin-current-summary').innerHTML = current
     ? `<strong>${current.name}</strong> is Get Ready.` +
       (scheduled
-        ? ` Assigned: <strong>${scheduled.date}</strong> (${scheduled.weekday || current.assignedWeekday || 'Sunday'}).`
+        ? ` Assigned: <strong>${prettyDate(scheduled.date)}</strong>.`
         : ' No hosting date scheduled yet.')
     : 'No current member selected.';
 
@@ -353,7 +357,7 @@ function render() {
     const weekday = member.assignedWeekday || 'Sunday';
     const swapOptions = members
       .filter((m) => m.id !== member.id && m.assignedHostDate)
-      .map((m) => `<option value="${m.id}">${m.name} (${m.assignedHostDate})</option>`)
+      .map((m) => `<option value="${m.id}">${m.name} (${prettyDate(m.assignedHostDate)})</option>`)
       .join('');
     return `<tr class="${member.id === data.state.currentMemberId ? 'current' : ''}">
       <td data-label="Order">${index + 1}</td>
