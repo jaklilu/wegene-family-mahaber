@@ -6,7 +6,8 @@ async function bootAdmin() {
     appShellId: 'admin-shell',
     passwordInputId: 'admin-password',
     loginButtonId: 'admin-login-button',
-    errorId: 'admin-login-error'
+    errorId: 'admin-login-error',
+    unlockName: 'unlockWegeneAdmin'
   });
 
   const logout = document.getElementById('admin-logout-button');

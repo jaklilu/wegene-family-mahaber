@@ -14,7 +14,7 @@
       <p>Admin-only planning surface. This uses a separate local demo password and does not store real credentials.</p>
       <label for="admin-password">Admin demo password</label>
       <input type="password" id="admin-password" autocomplete="current-password" />
-      <button type="button" id="admin-login-button">Enter admin tools</button>
+      <button type="button" id="admin-login-button" onclick="window.unlockWegeneAdmin && window.unlockWegeneAdmin()">Enter admin tools</button>
       <p class="error" id="admin-login-error" hidden>Incorrect admin password. Member password does not unlock admin tools.</p>
     </div>
   </section>

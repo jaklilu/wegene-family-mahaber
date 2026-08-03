@@ -130,10 +130,17 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
 .actions button { min-height:48px; }
 .hidden-date-picker { position:absolute; width:1px !important; height:1px !important; min-width:0 !important; min-height:0 !important; opacity:0; pointer-events:none; left:12px; bottom:12px; }
 .small { padding: 8px 11px; font-size: .85rem; }
-#app-shell[hidden], #login-screen[hidden] { display:none !important; }
-body.is-authenticated #login-screen { display:none !important; }
-body.is-authenticated #app-shell { display:block !important; }
+#app-shell[hidden],
+#login-screen[hidden],
+#admin-shell[hidden],
+#admin-login-screen[hidden],
+.login-screen[hidden] { display:none !important; }
+body.is-authenticated #login-screen,
+body.is-authenticated #admin-login-screen { display:none !important; }
+body.is-authenticated #app-shell,
+body.is-authenticated #admin-shell { display:block !important; }
 .login-screen { min-height:100vh; display:grid; place-items:center; padding:20px; background:radial-gradient(circle at 18% 16%, rgba(255,214,0,.92), transparent 27rem), radial-gradient(circle at 84% 20%, rgba(0,150,57,.82), transparent 28rem), radial-gradient(circle at 70% 86%, rgba(218,41,28,.68), transparent 24rem), linear-gradient(145deg, #ffe100, #0fa64f 58%, #da291c); }
+.error[hidden] { display:none !important; }
 .login-card { width:min(460px, 100%); background:rgba(255,255,255,.88); border:1px solid rgba(255,255,255,.8); border-radius:28px; padding:30px; box-shadow:var(--shadow); display:grid; gap:15px; backdrop-filter: blur(20px); }
 .login-card label { font-weight:850; color:var(--ink); }
 .login-card input { width:100%; }
