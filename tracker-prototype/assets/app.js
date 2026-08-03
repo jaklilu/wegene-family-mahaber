@@ -200,8 +200,8 @@ function render(data) {
       <td data-label="Member" class="name-cell">
         ${renderAvatar(member)}
         <span class="member-meta">
-          <span class="member-name">${member.name}</span>
           <span class="date-cell">${displayDate(data, member)}</span>
+          <span class="member-name">${member.name}</span>
         </span>
       </td>
       <td data-label="Status">${badge(status)}</td>
