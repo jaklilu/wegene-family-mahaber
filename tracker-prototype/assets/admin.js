@@ -189,10 +189,17 @@ function emergencySwap(memberId, otherMemberId) {
   if (!member.assignedHostDate || !other.assignedHostDate) {
     return showMessage('Both members need an assigned date to swap.', true);
   }
-  if (!confirm(
-    `Emergency swap?\n\n${member.name}: ${prettyDate(member.assignedHostDate)}\n${other.name}: ${prettyDate(other.assignedHostDate)}\n\n` +
-    `They will exchange dates and places. Earlier date becomes Get Ready.`
-  )) return;
+
+  const confirmed = confirm(
+    `Have you confirmed this date swap with ${other.name}?\n\n` +
+    `${member.name}: ${prettyDate(member.assignedHostDate)}\n` +
+    `${other.name}: ${prettyDate(other.assignedHostDate)}\n\n` +
+    `Yes = OK\nNo = Cancel`
+  );
+  if (!confirmed) {
+    showMessage(`Swap cancelled. Confirm with ${other.name} first.`);
+    return;
+  }
 
   SCHEDULE.swapAssignedDates(member, other);
   resequenceOrders();
