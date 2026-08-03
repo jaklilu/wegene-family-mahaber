@@ -6,5 +6,6 @@ window.WEGENE_CONFIG = {
   memberPassword: 'Wegene2026!',
   adminPassword: 'AdminDemo2026!',
   memberSessionStorageKey: 'wegene-member-session-v1',
-  adminSessionStorageKey: 'wegene-admin-session-v1'
+  adminSessionStorageKey: 'wegene-admin-session-v1',
+  trackerApiPath: '/api/tracker-data'
 };

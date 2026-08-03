@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v6';
+const STORAGE_KEY = 'wegene-tracker-mvp-v7';
 const SCHEDULE = window.WegeneSchedule;
 
 const $ = (id) => document.getElementById(id);
@@ -15,6 +15,10 @@ async function loadSeedData() {
 }
 
 function save() {
+  if (window.WegeneStore) {
+    window.WegeneStore.saveTrackerData(STORAGE_KEY, data);
+    return;
+  }
   data.state.updatedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
@@ -484,7 +488,10 @@ async function bootAdmin() {
   if (window.WegeneMenu) window.WegeneMenu.setupMenu('menu-toggle', 'site-menu');
 
   const seed = await loadSeedData();
-  data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || seed;
+  const loaded = window.WegeneStore
+    ? await window.WegeneStore.loadTrackerData(STORAGE_KEY, seed)
+    : { data: JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || seed };
+  data = loaded.data;
   if (!Array.isArray(data.members) || !data.state || !Array.isArray(data.history)) {
     data = seed;
   }
