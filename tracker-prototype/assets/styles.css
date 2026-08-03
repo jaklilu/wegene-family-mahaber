@@ -303,18 +303,29 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  align-items: stretch;
 }
 .clean-actions > * { width: 100%; }
 .clean-actions button {
   text-align: center;
   justify-content: center;
-  white-space: nowrap;
+  align-items: center;
+  display: inline-flex;
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 56px;
+  height: 100%;
 }
 .swap-actions {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: stretch;
+}
+.swap-actions button,
+.swap-actions select {
+  min-height: 56px;
+  height: 100%;
 }
 .pair-actions {
   display: grid;
@@ -488,19 +499,23 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
   .clean-actions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    align-items: stretch;
   }
   .pair-actions { grid-template-columns: 1fr 1fr; gap: 8px; }
   .swap-actions {
     grid-template-columns: 1fr auto;
     gap: 8px;
+    align-items: stretch;
   }
-  .actions button,
-  .pair-actions button,
-  .clean-actions button,
-  .swap-actions button {
-    min-height: 48px;
-    font-size: .92rem;
-    padding: 10px 8px;
+  #current-actions .clean-actions button,
+  #current-actions .swap-actions button,
+  #current-actions .swap-actions select {
+    min-height: 68px;
+    height: 100%;
+    font-size: .88rem;
+    padding: 10px 6px;
+    line-height: 1.15;
+    white-space: normal;
   }
   input[type="date"],
   input[type="password"],
@@ -606,9 +621,11 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
   header h1,
   .page-header h1 { font-size: clamp(1.55rem, 9vw, 2rem); }
   .menu-toggle-label { display: none; }
-  .clean-actions button {
-    font-size: .82rem;
-    padding: 10px 6px;
+  #current-actions .clean-actions button,
+  #current-actions .swap-actions button,
+  #current-actions .swap-actions select {
+    min-height: 72px;
+    font-size: .84rem;
   }
 }
 
