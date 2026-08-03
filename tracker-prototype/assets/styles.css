@@ -265,7 +265,7 @@ tr:last-child td { border-bottom:0; }
   display: block;
   margin-top: 8px;
   color: var(--green-dark);
-  font-size: clamp(1.35rem, 4vw, 1.85rem);
+  font-size: clamp(1.75rem, 5.5vw, 2.4rem);
   font-weight: 950;
   text-align: center;
 }
