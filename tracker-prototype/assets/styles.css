@@ -533,18 +533,18 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
   .current-card .scheduled-line {
     text-align: center;
     font-weight: 950;
-    font-size: clamp(1.35rem, 6.2vw, 1.85rem);
+    font-size: clamp(1.9rem, 8.2vw, 2.5rem);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     max-width: 100%;
+    margin-top: 0;
+    line-height: 1.1;
   }
   .mahaber-label {
     font-size: 0.88rem;
   }
   #current-summary { margin: 0; }
   .current-person {
-    font-size: clamp(1.45rem, 7.5vw, 2rem);
+    font-size: clamp(1.2rem, 5.2vw, 1.55rem);
     gap: 10px;
     flex-wrap: wrap;
   }
@@ -553,11 +553,6 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
     display: inline;
     white-space: nowrap;
     font-size: 1em;
-  }
-  .scheduled-line {
-    margin-top: 10px;
-    font-size: 1rem;
-    line-height: 1.4;
   }
   .option-group { padding: 12px; border-radius: 14px; }
   .option-label { font-size: .9rem; margin-bottom: 10px; }
