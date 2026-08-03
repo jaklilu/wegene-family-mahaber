@@ -170,8 +170,8 @@ function render(data) {
       <button type="button" class="ghost" id="toggle-weekend">
         ${weekday === 'Sunday' ? 'Change to Saturday' : 'Change back to Sunday'}
       </button>
-      <button type="button" class="ghost" id="week-earlier">1 week earlier</button>
-      <button type="button" class="ghost" id="week-later">1 week later</button>
+      <button type="button" class="ghost" id="week-earlier">-1 week</button>
+      <button type="button" class="ghost" id="week-later">+1 week</button>
     </div>
     <div class="actions swap-actions">
       <select id="swap-member" aria-label="Swap date with member">

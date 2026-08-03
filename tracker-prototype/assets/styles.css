@@ -305,6 +305,11 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
   gap: 8px;
 }
 .clean-actions > * { width: 100%; }
+.clean-actions button {
+  text-align: center;
+  justify-content: center;
+  white-space: nowrap;
+}
 .swap-actions {
   display: grid;
   grid-template-columns: 1fr auto;
