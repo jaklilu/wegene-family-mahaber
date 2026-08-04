@@ -332,8 +332,8 @@ function render(data) {
     </div>
     <div class="actions host-confirm-row">
       ${current?.dateConfirmed
-        ? '<button type="button" class="yes-button" id="host-confirm-button" disabled>Confirmed</button>'
-        : '<button type="button" class="yes-button" id="host-confirm-button">Confirm</button>'}
+        ? `<button type="button" class="yes-button" id="host-confirm-button" disabled>${current.name} - Confirmed</button>`
+        : `<button type="button" class="yes-button" id="host-confirm-button">${current?.name || 'Host'} - Confirm Date</button>`}
       <span class="change-timer${changesLocked ? ' is-locked' : ''}" id="change-timer">${timerText}</span>
     </div>
   `;
