@@ -54,6 +54,7 @@
   }
 
   function swapAssignedDates(memberA, memberB) {
+    // Exchange full hosting spots: date, weekday, and rotation position.
     const dateA = memberA.assignedHostDate;
     const weekdayA = memberA.assignedWeekday;
     const orderA = memberA.rotationOrder;

@@ -180,12 +180,17 @@ function hideSwapConfirm() {
   hideDateConfirm();
 }
 
-function showSwapConfirm(other) {
+function showSwapConfirm(current, other) {
   const panel = $('swap-confirm');
   const text = $('swap-confirm-text');
   if (!panel || !text) return;
   hideDateConfirm();
-  text.textContent = `Have you confirmed this date swap with ${other.name}?`;
+  const currentDate = prettyDate(current.assignedHostDate);
+  const otherDate = prettyDate(other.assignedHostDate);
+  text.innerHTML =
+    `<strong>${other.name}</strong> takes <strong>${currentDate}</strong><br>` +
+    `<strong>${current.name}</strong> takes <strong>${otherDate}</strong><br><br>` +
+    `Have you confirmed with ${other.name}?`;
   panel.hidden = false;
 }
 
@@ -197,9 +202,12 @@ function applyEmergencySwap(data, otherMemberId) {
     return showMessage('Both members need an assigned date to swap.');
   }
 
+  // Trade places: each person gets the other's date and list position.
   SCHEDULE.swapAssignedDates(current, other);
   current.dateConfirmed = false;
   other.dateConfirmed = false;
+
+  // Whoever now holds the sooner date becomes next.
   const earlier = current.assignedHostDate <= other.assignedHostDate ? current : other;
   data.state.currentMemberId = earlier.id;
   data.state.mainPointerOrder = earlier.rotationOrder;
@@ -211,11 +219,15 @@ function applyEmergencySwap(data, otherMemberId) {
 }
 
 function requestEmergencySwap(data, otherMemberId) {
+  const current = memberById(data, data.state.currentMemberId);
   const other = memberById(data, Number(otherMemberId));
+  if (!current) return;
   if (!other) return showMessage('Choose a family member to swap with first.');
-  if (!other.assignedHostDate) return showMessage('Both members need an assigned date to swap.');
+  if (!other.assignedHostDate || !current.assignedHostDate) {
+    return showMessage('Both members need an assigned date to swap.');
+  }
 
-  showSwapConfirm(other);
+  showSwapConfirm(current, other);
 
   const yes = $('swap-yes');
   const no = $('swap-no');
