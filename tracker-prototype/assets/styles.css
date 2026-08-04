@@ -348,9 +348,11 @@ input:focus { border-color: rgba(47, 143, 91, .55); box-shadow: 0 0 0 4px rgba(4
 }
 .host-confirm-row .yes-button {
   min-width: 220px;
-  width: min(100%, 320px);
+  width: min(100%, 380px);
   min-height: 56px;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.2;
+  padding-inline: 16px;
 }
 .change-timer {
   display: block;
