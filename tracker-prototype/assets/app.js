@@ -306,7 +306,14 @@ function requestEmergencySwap(data, otherMemberId) {
     yes.onclick = null;
     no.onclick = null;
     hideSwapConfirm();
-    showMessage(`Swap cancelled. Confirm with ${other.name} first.`);
+    const message = $('validation-message');
+    if (message) {
+      message.hidden = true;
+      message.textContent = '';
+      message.classList.remove('notice-error', 'notice-pop');
+    }
+    render(data);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 }
 
