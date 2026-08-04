@@ -132,13 +132,6 @@ function prettyDate(isoDate) {
   return SCHEDULE ? SCHEDULE.formatDisplayDate(isoDate) : isoDate;
 }
 
-function formatShortDate(isoDate) {
-  if (!isoDate) return '';
-  const [year, month, day] = isoDate.split('-');
-  if (!year || !month || !day) return isoDate;
-  return `${month}/${day}/${year}`;
-}
-
 function startOfToday() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -364,7 +357,7 @@ function render(data) {
     </div>
     <div class="actions host-confirm-row">
       ${current?.dateConfirmed
-        ? `<button type="button" class="yes-button" id="host-confirm-button" disabled>${formatShortDate(hostDate)}</button>`
+        ? `<button type="button" class="yes-button" id="host-confirm-button" disabled>${current.name} - Confirmed</button>`
         : `<button type="button" class="yes-button" id="host-confirm-button">${current?.name || 'Host'} - Confirm Date</button>`}
       <span class="change-timer${changesLocked ? ' is-locked' : ''}" id="change-timer">${timerText}</span>
     </div>
