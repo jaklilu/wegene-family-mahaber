@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'wegene-tracker-mvp-v7';
+const STORAGE_KEY = 'wegene-tracker-mvp-v8';
 const SCHEDULE = window.WegeneSchedule;
 
 const $ = (id) => document.getElementById(id);

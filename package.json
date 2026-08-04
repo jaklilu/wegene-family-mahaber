@@ -1,0 +1,7 @@
+{
+  "name": "wegene-family-mahaber",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^9.1.2"
+  }
+}
