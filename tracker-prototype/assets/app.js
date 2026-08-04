@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'wegene-tracker-mvp-v9';
 const DAY_MS = 24 * 60 * 60 * 1000;
-const CHANGE_LOCK_DAYS = 60;
+const CHANGE_LOCK_DAYS = 30;
 const AUTH = window.WegeneAuth;
 const SCHEDULE = window.WegeneSchedule;
 
@@ -138,7 +138,9 @@ function changeWindowLabel(isoDate) {
     return `Date moves locked · swap still OK`;
   }
   const left = days - CHANGE_LOCK_DAYS;
-  return left === 1 ? '1 day left to change' : `${left} days left to change`;
+  return left === 1
+    ? 'Only 1 day left to change dates'
+    : `Only ${left} days left to change dates`;
 }
 
 function confirmCurrentHost(data) {
