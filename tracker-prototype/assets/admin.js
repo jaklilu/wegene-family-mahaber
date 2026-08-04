@@ -195,9 +195,6 @@ function emergencySwap(memberId, otherMemberId) {
   }
 
   const confirmed = confirm(
-    `Swap places?\n\n` +
-    `${other.name} takes ${prettyDate(member.assignedHostDate)}\n` +
-    `${member.name} takes ${prettyDate(other.assignedHostDate)}\n\n` +
     `Have you confirmed with ${other.name}?\n\n` +
     `OK = Yes\nCancel = No`
   );

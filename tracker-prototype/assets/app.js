@@ -185,12 +185,7 @@ function showSwapConfirm(current, other) {
   const text = $('swap-confirm-text');
   if (!panel || !text) return;
   hideDateConfirm();
-  const currentDate = prettyDate(current.assignedHostDate);
-  const otherDate = prettyDate(other.assignedHostDate);
-  text.innerHTML =
-    `<strong>${other.name}</strong> takes <strong>${currentDate}</strong><br>` +
-    `<strong>${current.name}</strong> takes <strong>${otherDate}</strong><br><br>` +
-    `Have you confirmed with ${other.name}?`;
+  text.textContent = `Have you confirmed with ${other.name}?`;
   panel.hidden = false;
 }
 
