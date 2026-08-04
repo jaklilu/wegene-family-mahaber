@@ -180,7 +180,7 @@ function hideSwapConfirm() {
   hideDateConfirm();
 }
 
-function showSwapConfirm(current, other) {
+function showSwapConfirm(other) {
   const panel = $('swap-confirm');
   const text = $('swap-confirm-text');
   if (!panel || !text) return;
@@ -222,7 +222,7 @@ function requestEmergencySwap(data, otherMemberId) {
     return showMessage('Both members need an assigned date to swap.');
   }
 
-  showSwapConfirm(current, other);
+  showSwapConfirm(other);
 
   const yes = $('swap-yes');
   const no = $('swap-no');
