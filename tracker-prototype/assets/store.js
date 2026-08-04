@@ -9,20 +9,28 @@
 
   async function fetchSharedData() {
     const response = await fetch(API_PATH, { cache: 'no-store' });
-    if (response.status === 404) return null;
+    if (response.status === 404) return { empty: true };
     if (!response.ok) throw new Error(`Shared data request failed (${response.status})`);
-    return response.json();
+    return { empty: false, data: await response.json() };
+  }
+
+  function useSeed(storageKey, seed) {
+    localStorage.setItem(storageKey, JSON.stringify(seed));
+    saveTrackerData(storageKey, seed);
+    return { data: seed, source: 'seed' };
   }
 
   async function loadTrackerData(storageKey, seed) {
     try {
       const remote = await fetchSharedData();
-      if (isValidData(remote)) {
-        localStorage.setItem(storageKey, JSON.stringify(remote));
-        return { data: remote, source: 'shared' };
+      if (!remote.empty && isValidData(remote.data)) {
+        localStorage.setItem(storageKey, JSON.stringify(remote.data));
+        return { data: remote.data, source: 'shared' };
       }
+      // Empty shared store: always seed Nov 1 (ignore per-device local drift).
+      if (remote.empty) return useSeed(storageKey, seed);
     } catch (_) {
-      // Fall through when offline or API unavailable.
+      // Offline / API down: keep working from this device only.
     }
 
     const local = JSON.parse(localStorage.getItem(storageKey) || 'null');
@@ -30,10 +38,7 @@
       return { data: local, source: 'local' };
     }
 
-    // First shared write: publish seed so every device starts on the same calendar.
-    localStorage.setItem(storageKey, JSON.stringify(seed));
-    saveTrackerData(storageKey, seed);
-    return { data: seed, source: 'seed' };
+    return useSeed(storageKey, seed);
   }
 
   async function saveTrackerData(storageKey, data) {

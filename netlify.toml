@@ -1,8 +1,10 @@
 [build]
+  command = "npm install"
   publish = "tracker-prototype"
 
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
 
 [[headers]]
   for = "/*"
