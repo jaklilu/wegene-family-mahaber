@@ -156,9 +156,7 @@ function hideDateConfirm() {
 }
 
 function requestDateConfirm({ label, date, onConfirm }) {
-  const swapPanel = $('swap-confirm');
-  if (swapPanel) swapPanel.hidden = true;
-
+  hideSwapConfirm();
   const panel = $('date-confirm');
   const labelEl = $('date-confirm-label');
   const dateEl = $('date-confirm-date');
@@ -167,10 +165,10 @@ function requestDateConfirm({ label, date, onConfirm }) {
   if (!panel || !labelEl || !dateEl || !button) return;
 
   if (message) message.hidden = true;
-  labelEl.textContent = label || '';
-  labelEl.hidden = !label;
-  dateEl.textContent = date ? prettyDate(date) : '';
-  dateEl.hidden = !date;
+  labelEl.textContent = label;
+  labelEl.hidden = false;
+  dateEl.textContent = prettyDate(date);
+  dateEl.hidden = false;
   panel.hidden = false;
   button.onclick = () => {
     button.onclick = null;
@@ -181,6 +179,7 @@ function requestDateConfirm({ label, date, onConfirm }) {
 function hideSwapConfirm() {
   const panel = $('swap-confirm');
   if (panel) panel.hidden = true;
+  hideDateConfirm();
 }
 
 function showSwapConfirm(other) {
@@ -212,19 +211,6 @@ function applyEmergencySwap(data, otherMemberId) {
   save(data);
   hideSwapConfirm();
   render(data);
-
-  requestDateConfirm({
-    label: '',
-    date: '',
-    onConfirm: () => {
-      const next = memberById(data, data.state.currentMemberId);
-      if (!next) return;
-      syncScheduled(data, next, { confirm: true });
-      save(data);
-      hideDateConfirm();
-      render(data);
-    }
-  });
 }
 
 function requestEmergencySwap(data, otherMemberId) {
