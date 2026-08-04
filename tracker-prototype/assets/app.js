@@ -156,7 +156,9 @@ function hideDateConfirm() {
 }
 
 function requestDateConfirm({ label, date, onConfirm }) {
-  hideSwapConfirm();
+  const swapPanel = $('swap-confirm');
+  if (swapPanel) swapPanel.hidden = true;
+
   const panel = $('date-confirm');
   const labelEl = $('date-confirm-label');
   const dateEl = $('date-confirm-date');
@@ -165,8 +167,10 @@ function requestDateConfirm({ label, date, onConfirm }) {
   if (!panel || !labelEl || !dateEl || !button) return;
 
   if (message) message.hidden = true;
-  labelEl.textContent = label;
-  dateEl.textContent = prettyDate(date);
+  labelEl.textContent = label || '';
+  labelEl.hidden = !label;
+  dateEl.textContent = date ? prettyDate(date) : '';
+  dateEl.hidden = !date;
   panel.hidden = false;
   button.onclick = () => {
     button.onclick = null;
@@ -177,7 +181,6 @@ function requestDateConfirm({ label, date, onConfirm }) {
 function hideSwapConfirm() {
   const panel = $('swap-confirm');
   if (panel) panel.hidden = true;
-  hideDateConfirm();
 }
 
 function showSwapConfirm(other) {
@@ -197,12 +200,10 @@ function applyEmergencySwap(data, otherMemberId) {
     return showMessage('Both members need an assigned date to swap.');
   }
 
-  // Trade places: each person gets the other's date and list position.
   SCHEDULE.swapAssignedDates(current, other);
   current.dateConfirmed = false;
   other.dateConfirmed = false;
 
-  // Whoever now holds the sooner date becomes next.
   const earlier = current.assignedHostDate <= other.assignedHostDate ? current : other;
   data.state.currentMemberId = earlier.id;
   data.state.mainPointerOrder = earlier.rotationOrder;
@@ -211,6 +212,19 @@ function applyEmergencySwap(data, otherMemberId) {
   save(data);
   hideSwapConfirm();
   render(data);
+
+  requestDateConfirm({
+    label: '',
+    date: '',
+    onConfirm: () => {
+      const next = memberById(data, data.state.currentMemberId);
+      if (!next) return;
+      syncScheduled(data, next, { confirm: true });
+      save(data);
+      hideDateConfirm();
+      render(data);
+    }
+  });
 }
 
 function requestEmergencySwap(data, otherMemberId) {
