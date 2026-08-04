@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'wegene-tracker-mvp-v9';
 const DAY_MS = 24 * 60 * 60 * 1000;
-const CHANGE_LOCK_DAYS = 30;
+const CHANGE_LOCK_DAYS = 60;
 const AUTH = window.WegeneAuth;
 const SCHEDULE = window.WegeneSchedule;
 
