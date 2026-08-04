@@ -1,4 +1,6 @@
 const STORAGE_KEY = 'wegene-tracker-mvp-v9';
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CHANGE_LOCK_DAYS = 30;
 const AUTH = window.WegeneAuth;
 const SCHEDULE = window.WegeneSchedule;
 
@@ -112,7 +114,53 @@ function prettyDate(isoDate) {
   return SCHEDULE ? SCHEDULE.formatDisplayDate(isoDate) : isoDate;
 }
 
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function daysUntilHostDate(isoDate) {
+  if (!isoDate || !SCHEDULE) return null;
+  const host = SCHEDULE.parseISODate(isoDate);
+  if (Number.isNaN(host.getTime())) return null;
+  return Math.ceil((host.getTime() - startOfToday().getTime()) / DAY_MS);
+}
+
+function isDateChangeLocked(isoDate) {
+  const days = daysUntilHostDate(isoDate);
+  return days !== null && days <= CHANGE_LOCK_DAYS;
+}
+
+function changeWindowLabel(isoDate) {
+  const days = daysUntilHostDate(isoDate);
+  if (days === null) return '';
+  if (days <= CHANGE_LOCK_DAYS) {
+    return `Dates locked · under ${CHANGE_LOCK_DAYS} days`;
+  }
+  const left = days - CHANGE_LOCK_DAYS;
+  return left === 1 ? '1 day left to change' : `${left} days left to change`;
+}
+
+function confirmCurrentHost(data) {
+  const current = memberById(data, data.state.currentMemberId);
+  if (!current?.assignedHostDate) return;
+  syncScheduled(data, current, { confirm: true });
+  save(data);
+  hideDateConfirm();
+  hideSwapConfirm();
+  render(data);
+}
+
+function guardDateChanges(data) {
+  const current = memberById(data, data.state.currentMemberId);
+  if (!current?.assignedHostDate) return false;
+  if (!isDateChangeLocked(current.assignedHostDate)) return true;
+  showMessage(`Date changes are locked within ${CHANGE_LOCK_DAYS} days of the mahaber.`);
+  return false;
+}
+
 function setWeekendDay(data, weekday) {
+  if (!guardDateChanges(data)) return;
   const current = memberById(data, data.state.currentMemberId);
   if (!current?.assignedHostDate || !SCHEDULE) return;
   const nextDate = SCHEDULE.shiftToWeekendDay(current.assignedHostDate, weekday);
@@ -131,6 +179,7 @@ function setWeekendDay(data, weekday) {
 }
 
 function shiftCurrentByWeeks(data, weeks) {
+  if (!guardDateChanges(data)) return;
   const current = memberById(data, data.state.currentMemberId);
   if (!current?.assignedHostDate || !SCHEDULE) return;
   const shifted = SCHEDULE.shiftByWeeks(current.assignedHostDate, weeks);
@@ -214,6 +263,7 @@ function applyEmergencySwap(data, otherMemberId) {
 }
 
 function requestEmergencySwap(data, otherMemberId) {
+  if (!guardDateChanges(data)) return;
   const current = memberById(data, data.state.currentMemberId);
   const other = memberById(data, Number(otherMemberId));
   if (!current) return;
@@ -251,6 +301,10 @@ function render(data) {
   if (current && !data.state.scheduled) syncScheduled(data, current);
   const scheduled = data.state.scheduled;
   const weekday = current?.assignedWeekday || scheduled?.weekday || 'Sunday';
+  const hostDate = current?.assignedHostDate || scheduled?.date;
+  const changesLocked = isDateChangeLocked(hostDate);
+  const timerText = changeWindowLabel(hostDate);
+  const lockedAttr = changesLocked ? 'disabled' : '';
 
   $('current-summary').innerHTML = current
     ? `<span class="mahaber-label">Our next mahaber is...</span>
@@ -262,18 +316,24 @@ function render(data) {
 
   $('current-actions').innerHTML = `
     <div class="actions clean-actions">
-      <button type="button" class="ghost" id="toggle-weekend">
+      <button type="button" class="ghost" id="toggle-weekend" ${lockedAttr}>
         ${weekday === 'Sunday' ? 'Change to Saturday' : 'Change back to Sunday'}
       </button>
-      <button type="button" class="ghost" id="week-earlier">1 week earlier</button>
-      <button type="button" class="ghost" id="week-later">1 week later</button>
+      <button type="button" class="ghost" id="week-earlier" ${lockedAttr}>1 week earlier</button>
+      <button type="button" class="ghost" id="week-later" ${lockedAttr}>1 week later</button>
     </div>
     <div class="actions swap-actions">
-      <select id="swap-member" aria-label="Swap date with member">
+      <select id="swap-member" aria-label="Swap date with member" ${lockedAttr}>
         <option value="">Swap with…</option>
         ${others.map((m) => `<option value="${m.id}">${m.name} · ${prettyDate(m.assignedHostDate)}</option>`).join('')}
       </select>
-      <button type="button" class="secondary" id="swap-button">Swap dates</button>
+      <button type="button" class="secondary" id="swap-button" ${lockedAttr}>Swap dates</button>
+    </div>
+    <div class="actions host-confirm-row">
+      ${current?.dateConfirmed
+        ? '<button type="button" class="yes-button" id="host-confirm-button" disabled>Confirmed</button>'
+        : '<button type="button" class="yes-button" id="host-confirm-button">Confirm</button>'}
+      <span class="change-timer${changesLocked ? ' is-locked' : ''}" id="change-timer">${timerText}</span>
     </div>
   `;
 
@@ -286,6 +346,10 @@ function render(data) {
     const value = $('swap-member')?.value;
     if (!value) return showMessage('Choose a family member to swap with first.');
     requestEmergencySwap(data, value);
+  });
+  $('host-confirm-button')?.addEventListener('click', () => {
+    if (current?.dateConfirmed) return;
+    confirmCurrentHost(data);
   });
 
   const activeMembers = sortedActiveMembers(data);
