@@ -104,10 +104,28 @@ function save(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-function showMessage(text) {
+function showMessage(text, isError = false) {
   const box = $('validation-message');
+  if (!box) return;
   box.textContent = text;
   box.hidden = false;
+  box.classList.toggle('notice-error', Boolean(isError));
+  box.classList.remove('notice-pop');
+  void box.offsetWidth;
+  box.classList.add('notice-pop');
+  if (isError) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function promptSwapSelection() {
+  hideSwapConfirm();
+  hideDateConfirm();
+  showMessage('Choose a family member to swap with first.', true);
+  const select = $('swap-member');
+  if (!select) return;
+  select.classList.remove('field-attention');
+  void select.offsetWidth;
+  select.classList.add('field-attention');
+  select.focus();
 }
 
 function prettyDate(isoDate) {
@@ -268,7 +286,7 @@ function requestEmergencySwap(data, otherMemberId) {
   const current = memberById(data, data.state.currentMemberId);
   const other = memberById(data, Number(otherMemberId));
   if (!current) return;
-  if (!other) return showMessage('Choose a family member to swap with first.');
+  if (!other) return promptSwapSelection();
   if (!other.assignedHostDate || !current.assignedHostDate) {
     return showMessage('Both members need an assigned date to swap.');
   }
@@ -345,7 +363,7 @@ function render(data) {
   $('week-later')?.addEventListener('click', () => shiftCurrentByWeeks(data, 1));
   $('swap-button')?.addEventListener('click', () => {
     const value = $('swap-member')?.value;
-    if (!value) return showMessage('Choose a family member to swap with first.');
+    if (!value) return promptSwapSelection();
     requestEmergencySwap(data, value);
   });
   $('host-confirm-button')?.addEventListener('click', () => {

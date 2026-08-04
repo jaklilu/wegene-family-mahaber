@@ -463,6 +463,35 @@ body.is-authenticated #admin-shell { display:block !important; }
 .login-card input, .login-card button { width:100%; }
 .error { color:var(--red); font-weight:850; margin:0; }
 .notice { background:#fff8df; border:1px solid #f0d58b; border-radius:16px; padding:13px; color:#6b4b00; }
+.notice.notice-error {
+  background: #ffe8e6;
+  border-color: #f0a39d;
+  color: #8a2a24;
+  font-weight: 850;
+  font-size: 1.05rem;
+  text-align: center;
+}
+.notice.notice-pop {
+  animation: notice-pop 0.45s ease;
+}
+@keyframes notice-pop {
+  0% { transform: scale(0.96); opacity: 0.35; }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+select.field-attention,
+.field-attention {
+  border-color: #df342f !important;
+  box-shadow: 0 0 0 4px rgba(223, 52, 47, 0.18) !important;
+  animation: field-attention 0.55s ease;
+}
+@keyframes field-attention {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
 .private { background:#f3f0ff; border-color:#ddd4ff; color:#3d2c7a; }
 .hint { margin: 0 0 12px; color: var(--muted); font-size: .95rem; }
 .admin-actions { margin-top: 4px; }
