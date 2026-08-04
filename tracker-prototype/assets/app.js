@@ -135,7 +135,7 @@ function changeWindowLabel(isoDate) {
   const days = daysUntilHostDate(isoDate);
   if (days === null) return '';
   if (days <= CHANGE_LOCK_DAYS) {
-    return `Dates locked · under ${CHANGE_LOCK_DAYS} days`;
+    return `Date moves locked · swap still OK`;
   }
   const left = days - CHANGE_LOCK_DAYS;
   return left === 1 ? '1 day left to change' : `${left} days left to change`;
@@ -155,7 +155,7 @@ function guardDateChanges(data) {
   const current = memberById(data, data.state.currentMemberId);
   if (!current?.assignedHostDate) return false;
   if (!isDateChangeLocked(current.assignedHostDate)) return true;
-  showMessage(`Date changes are locked within ${CHANGE_LOCK_DAYS} days of the mahaber.`);
+  showMessage(`Date moves are locked within ${CHANGE_LOCK_DAYS} days of the mahaber. You can still swap with someone.`);
   return false;
 }
 
@@ -263,7 +263,6 @@ function applyEmergencySwap(data, otherMemberId) {
 }
 
 function requestEmergencySwap(data, otherMemberId) {
-  if (!guardDateChanges(data)) return;
   const current = memberById(data, data.state.currentMemberId);
   const other = memberById(data, Number(otherMemberId));
   if (!current) return;
@@ -323,11 +322,11 @@ function render(data) {
       <button type="button" class="ghost" id="week-later" ${lockedAttr}>1 week later</button>
     </div>
     <div class="actions swap-actions">
-      <select id="swap-member" aria-label="Swap date with member" ${lockedAttr}>
+      <select id="swap-member" aria-label="Swap date with member">
         <option value="">Swap with…</option>
         ${others.map((m) => `<option value="${m.id}">${m.name} · ${prettyDate(m.assignedHostDate)}</option>`).join('')}
       </select>
-      <button type="button" class="secondary" id="swap-button" ${lockedAttr}>Swap dates</button>
+      <button type="button" class="secondary" id="swap-button">Swap dates</button>
     </div>
     <div class="actions host-confirm-row">
       ${current?.dateConfirmed
