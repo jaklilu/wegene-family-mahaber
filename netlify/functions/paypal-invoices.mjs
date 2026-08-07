@@ -1,6 +1,10 @@
-const PAYPAL_API_BASE = (process.env.PAYPAL_API_BASE || 'https://api-m.paypal.com').replace(/\/$/, '');
-const CLIENT_ID = process.env.PAYPAL_CLIENT_ID || '';
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || '';
+const CLIENT_ID = String(process.env.PAYPAL_CLIENT_ID || '').trim();
+const CLIENT_SECRET = String(process.env.PAYPAL_CLIENT_SECRET || '').trim();
+const PAYPAL_MODE = String(process.env.PAYPAL_MODE || 'live').trim().toLowerCase();
+const PAYPAL_API_BASE = String(
+  process.env.PAYPAL_API_BASE ||
+    (PAYPAL_MODE === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com')
+).replace(/\/$/, '');
 
 const UNPAID_STATUSES = new Set([
   'SENT',
@@ -196,11 +200,14 @@ export default async (req) => {
       ok: true,
       count: invoices.length,
       invoices,
+      mode: PAYPAL_MODE === 'sandbox' ? 'sandbox' : 'live',
       fetchedAt: new Date().toISOString()
     });
   } catch (error) {
     return json(502, {
-      error: error.message || 'Could not load PayPal invoices.'
+      error: error.message || 'Could not load PayPal invoices.',
+      hint:
+        'Confirm PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are from the same PayPal app, with no extra spaces. For sandbox keys set PAYPAL_MODE=sandbox (or PAYPAL_API_BASE=https://api-m.sandbox.paypal.com), then redeploy.'
     });
   }
 };
