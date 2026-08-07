@@ -150,6 +150,13 @@ function normalizeInvoice(item) {
     metadata.create_time ||
     null;
   const sentDate = sentRaw ? String(sentRaw).slice(0, 10) : detail.invoice_date || null;
+  const invoiceDate = detail.invoice_date || null;
+  const dueDate =
+    detail.payment_term?.due_date ||
+    detail.due_date ||
+    item.due_date ||
+    item.payment_term?.due_date ||
+    null;
 
   return {
     id: item.id || detail.invoice_id || '',
@@ -158,8 +165,8 @@ function normalizeInvoice(item) {
     recipient,
     phone,
     amount,
-    dueDate: detail.payment_term?.due_date || detail.due_date || null,
-    invoiceDate: detail.invoice_date || null,
+    dueDate,
+    invoiceDate,
     sentDate,
     viewUrl: payHref,
     payUrl: payHref
@@ -187,9 +194,9 @@ async function attachPayLinks(token, apiBase, invoices) {
     const chunk = invoices.slice(i, i + chunkSize);
     const details = await Promise.all(
       chunk.map(async (invoice) => {
-        if (invoice.payUrl && String(invoice.payUrl).includes('/invoice/')) {
-          return invoice;
-        }
+        const needsDetails = !invoice.dueDate || !invoice.payUrl || !String(invoice.payUrl).includes('paypal.com');
+        if (!needsDetails) return invoice;
+
         const full = await fetchInvoiceDetails(token, apiBase, invoice.id);
         if (!full) return invoice;
         const merged = normalizeInvoice(full);
@@ -199,8 +206,11 @@ async function attachPayLinks(token, apiBase, invoices) {
           recipient: invoice.recipient !== '—' ? invoice.recipient : merged.recipient,
           phone: invoice.phone || merged.phone,
           amount: invoice.amount || merged.amount,
-          dueDate: invoice.dueDate || merged.dueDate,
-          sentDate: invoice.sentDate || merged.sentDate
+          dueDate: merged.dueDate || invoice.dueDate || merged.invoiceDate || invoice.invoiceDate || null,
+          invoiceDate: merged.invoiceDate || invoice.invoiceDate || null,
+          sentDate: merged.sentDate || invoice.sentDate || null,
+          payUrl: merged.payUrl || invoice.payUrl || null,
+          viewUrl: merged.viewUrl || invoice.viewUrl || null
         };
       })
     );
