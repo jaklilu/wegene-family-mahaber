@@ -82,7 +82,9 @@
         <div><dt>Amount</dt><dd class="invoice-result-amount">${escapeHtml(invoice.amount || '—')}</dd></div>
         <div><dt>Due</dt><dd>${escapeHtml(formatDate(invoice.dueDate))}</dd></div>
       </dl>
-      ${payButton}
+      <div class="invoice-result-actions">
+        ${payButton}
+      </div>
     </article>`;
   }
 
