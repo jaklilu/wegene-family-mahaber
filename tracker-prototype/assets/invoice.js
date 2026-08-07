@@ -70,7 +70,10 @@
     const matches = allInvoices.filter((invoice) => recipientKey(invoice) === name);
     if (!matches.length) {
       results.hidden = false;
-      results.innerHTML = `<p class="invoice-empty">No unpaid invoice found for <strong>${escapeHtml(name)}</strong>.</p>`;
+      results.innerHTML = `<div class="invoice-empty-card">
+        <p class="invoice-empty-title">You're all caught up, ${escapeHtml(name)}!</p>
+        <p class="invoice-empty">No unpaid invoice right now. Thank you for staying current with Wegene Family Mahaber.</p>
+      </div>`;
       return;
     }
 
@@ -111,7 +114,18 @@
       const count = uniqueNames(invoices).length;
       summary.textContent = count
         ? `${count} member${count === 1 ? '' : 's'} with unpaid invoices`
-        : 'No unpaid invoices found.';
+        : 'Great news — everyone is paid up right now.';
+    }
+
+    if (!invoices.length) {
+      const results = $('invoice-results');
+      if (results) {
+        results.hidden = false;
+        results.innerHTML = `<div class="invoice-empty-card">
+          <p class="invoice-empty-title">All clear!</p>
+          <p class="invoice-empty">There are no unpaid invoices at the moment. Thank you for supporting Wegene Family Mahaber.</p>
+        </div>`;
+      }
     }
   }
 

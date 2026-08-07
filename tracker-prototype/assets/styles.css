@@ -652,6 +652,23 @@ body.is-authenticated #admin-shell { display:block !important; }
   color: var(--muted);
   font-weight: 750;
 }
+.invoice-empty-card {
+  padding: 18px 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(216, 244, 221, 0.7), rgba(255, 241, 200, 0.55));
+  border: 1px solid rgba(31, 90, 57, 0.14);
+  text-align: center;
+  display: grid;
+  gap: 8px;
+}
+.invoice-empty-title {
+  margin: 0;
+  color: var(--green-dark);
+  font-size: 1.2rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
 .invoice-result-card .invoice-pay-link {
   width: min(100%, 260px);
   min-height: 52px;
