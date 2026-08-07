@@ -6,6 +6,7 @@
 
   const $ = (id) => document.getElementById(id);
   let allInvoices = [];
+  let allNames = [];
 
   function formatDate(value) {
     if (!value) return '—';
@@ -26,9 +27,17 @@
     return String(invoice.recipient || '').trim();
   }
 
-  function uniqueNames(invoices) {
+  function uniqueUnpaidNames(invoices) {
     const names = [...new Set(invoices.map(recipientKey).filter((name) => name && name !== '—'))];
     return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  }
+
+  function dropdownNames(invoices, namesFromApi) {
+    const merged = new Set([
+      ...(Array.isArray(namesFromApi) ? namesFromApi : []),
+      ...uniqueUnpaidNames(invoices)
+    ].map((name) => String(name || '').trim()).filter((name) => name && name !== '—'));
+    return [...merged].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   }
 
   function setPickerVisible(visible) {
@@ -38,11 +47,10 @@
     if (select) select.hidden = !visible;
   }
 
-  function fillNameDropdown(invoices) {
+  function fillNameDropdown(names) {
     const select = $('invoice-member-select');
     if (!select) return;
 
-    const names = uniqueNames(invoices);
     const previous = select.value;
     select.innerHTML =
       '<option value="">Choose your name…</option>' +
@@ -134,7 +142,7 @@
     results.innerHTML = matches.map((invoice) => invoiceCard(invoice, name)).join('');
   }
 
-  function showLoadedState(invoices) {
+  function showLoadedState(invoices, namesFromApi) {
     const summary = $('invoice-summary');
     const error = $('invoice-error');
     if (error) {
@@ -143,6 +151,7 @@
     }
 
     allInvoices = invoices;
+    allNames = dropdownNames(invoices, namesFromApi);
 
     if (showAll) {
       setPickerVisible(false);
@@ -156,24 +165,13 @@
     }
 
     setPickerVisible(true);
-    fillNameDropdown(invoices);
+    fillNameDropdown(allNames);
 
     if (summary) {
-      const count = uniqueNames(invoices).length;
-      summary.textContent = count
-        ? `${count} member${count === 1 ? '' : 's'} with unpaid invoices`
-        : 'Great news — everyone is paid up right now.';
-    }
-
-    if (!invoices.length) {
-      const results = $('invoice-results');
-      if (results) {
-        results.hidden = false;
-        results.innerHTML = `<div class="invoice-empty-card">
-          <p class="invoice-empty-title">All clear!</p>
-          <p class="invoice-empty">There are no unpaid invoices at the moment. Thank you for supporting Wegene Family Mahaber.</p>
-        </div>`;
-      }
+      const unpaidCount = uniqueUnpaidNames(invoices).length;
+      summary.textContent = unpaidCount
+        ? `${unpaidCount} unpaid · ${allNames.length} names in list`
+        : `Everyone is paid up · ${allNames.length} names in list`;
     }
   }
 
@@ -182,6 +180,7 @@
     const summary = $('invoice-summary');
     const select = $('invoice-member-select');
     allInvoices = [];
+    allNames = [];
     hideResults();
     if (select) {
       select.innerHTML = '<option value="">Choose your name…</option>';
@@ -215,7 +214,7 @@
           sensitivity: 'base'
         })
       );
-      showLoadedState(invoices);
+      showLoadedState(invoices, data.names || []);
     } catch (err) {
       showError(err.message || 'Could not load PayPal invoices.');
     }
