@@ -143,6 +143,14 @@ function normalizeInvoice(item) {
         ? `https://www.paypal.com/invoice/payerView/details/${item.id}`
         : null;
 
+  const metadata = detail.metadata || item.metadata || {};
+  const sentRaw =
+    metadata.first_sent_time ||
+    metadata.last_sent_time ||
+    metadata.create_time ||
+    null;
+  const sentDate = sentRaw ? String(sentRaw).slice(0, 10) : detail.invoice_date || null;
+
   return {
     id: item.id || detail.invoice_id || '',
     number: detail.invoice_number || item.invoice_number || item.id || '—',
@@ -152,6 +160,7 @@ function normalizeInvoice(item) {
     amount,
     dueDate: detail.payment_term?.due_date || detail.due_date || null,
     invoiceDate: detail.invoice_date || null,
+    sentDate,
     viewUrl: payHref,
     payUrl: payHref
   };
@@ -190,7 +199,8 @@ async function attachPayLinks(token, apiBase, invoices) {
           recipient: invoice.recipient !== '—' ? invoice.recipient : merged.recipient,
           phone: invoice.phone || merged.phone,
           amount: invoice.amount || merged.amount,
-          dueDate: invoice.dueDate || merged.dueDate
+          dueDate: invoice.dueDate || merged.dueDate,
+          sentDate: invoice.sentDate || merged.sentDate
         };
       })
     );

@@ -80,6 +80,7 @@
       <dl class="invoice-result-meta">
         <div><dt>Invoice</dt><dd>${escapeHtml(invoice.number)}</dd></div>
         <div><dt>Amount</dt><dd class="invoice-result-amount">${escapeHtml(invoice.amount || '—')}</dd></div>
+        <div><dt>Sent</dt><dd>${escapeHtml(formatDate(invoice.sentDate || invoice.invoiceDate))}</dd></div>
         <div class="invoice-due-pay">
           <div>
             <dt>Due</dt>
