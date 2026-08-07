@@ -43,17 +43,22 @@ function credentialDiagnostics() {
     clientIdLength: CLIENT_ID.length,
     clientSecretLength: CLIENT_SECRET.length,
     clientIdPrefix: CLIENT_ID ? CLIENT_ID.slice(0, 6) : '',
+    sameIdAndSecret: Boolean(CLIENT_ID) && CLIENT_ID === CLIENT_SECRET,
     mode: PAYPAL_MODE || 'live',
-    customApiBase: CUSTOM_API_BASE || null
+    customApiBase: CUSTOM_API_BASE || null,
+    basesTried: apiBasesToTry()
   };
 }
 
 function apiBasesToTry() {
-  if (CUSTOM_API_BASE) return [CUSTOM_API_BASE];
-  if (PAYPAL_MODE === 'sandbox') {
-    return ['https://api-m.sandbox.paypal.com', 'https://api-m.paypal.com'];
+  const live = 'https://api-m.paypal.com';
+  const sandbox = 'https://api-m.sandbox.paypal.com';
+  if (CUSTOM_API_BASE) {
+    const other = CUSTOM_API_BASE.includes('sandbox') ? live : sandbox;
+    return [CUSTOM_API_BASE, other];
   }
-  return ['https://api-m.paypal.com', 'https://api-m.sandbox.paypal.com'];
+  if (PAYPAL_MODE === 'sandbox') return [sandbox, live];
+  return [live, sandbox];
 }
 
 async function getAccessToken() {
