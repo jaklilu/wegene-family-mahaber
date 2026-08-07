@@ -80,7 +80,7 @@ Seed schedule notes live in `tracker-prototype/data/state.json` → `scheduleRul
 - Defined in `tracker-prototype/assets/config.js`
 - Session keys in `sessionStorage` via `assets/auth.js`
 - Sticky menu: Tracker / Check Invoice / Admin / Log out; mobile hamburger (`assets/nav.js`)
-- **Check Invoice** tab (`invoice.html`) opens the existing invoice portal: `https://wegene.pythonanywhere.com/`
+- **Check Invoice** menu item opens `https://wegene.pythonanywhere.com/` directly in a new tab
 
 > Production note: these are **client-side demo gates**. Real production should use Netlify/server auth or similar. Optional env: `TRACKER_WRITE_PASSWORD` for the shared API write gate (defaults to member password).
 
