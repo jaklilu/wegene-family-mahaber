@@ -102,6 +102,17 @@ function money(value) {
   return null;
 }
 
+function extractPayUrl(item) {
+  return (
+    item?.detail?.metadata?.recipient_view_url ||
+    item?.metadata?.recipient_view_url ||
+    item?.links?.find((link) =>
+      ['payer-view', 'recipient_view', 'self'].includes(String(link.rel || ''))
+    )?.href ||
+    null
+  );
+}
+
 function normalizeInvoice(item) {
   const detail = item.detail || {};
   const amount =
@@ -124,6 +135,14 @@ function normalizeInvoice(item) {
     item.primary_recipients?.[0]?.billing_info?.phone?.national_number ||
     '';
 
+  const payUrl = extractPayUrl(item);
+  const payHref =
+    payUrl && String(payUrl).includes('paypal.com')
+      ? payUrl
+      : item.id
+        ? `https://www.paypal.com/invoice/payerView/details/${item.id}`
+        : null;
+
   return {
     id: item.id || detail.invoice_id || '',
     number: detail.invoice_number || item.invoice_number || item.id || '—',
@@ -133,12 +152,52 @@ function normalizeInvoice(item) {
     amount,
     dueDate: detail.payment_term?.due_date || detail.due_date || null,
     invoiceDate: detail.invoice_date || null,
-    viewUrl:
-      item.detail?.metadata?.recipient_view_url ||
-      item.metadata?.recipient_view_url ||
-      item.links?.find((link) => link.rel === 'payer-view' || link.rel === 'recipient_view')?.href ||
-      null
+    viewUrl: payHref,
+    payUrl: payHref
   };
+}
+
+async function fetchInvoiceDetails(token, apiBase, invoiceId) {
+  if (!invoiceId) return null;
+  const response = await fetch(`${apiBase}/v2/invoicing/invoices/${encodeURIComponent(invoiceId)}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    }
+  });
+  if (!response.ok) return null;
+  return response.json().catch(() => null);
+}
+
+async function attachPayLinks(token, apiBase, invoices) {
+  const enriched = [];
+  const chunkSize = 5;
+
+  for (let i = 0; i < invoices.length; i += chunkSize) {
+    const chunk = invoices.slice(i, i + chunkSize);
+    const details = await Promise.all(
+      chunk.map(async (invoice) => {
+        if (invoice.payUrl && String(invoice.payUrl).includes('/invoice/')) {
+          return invoice;
+        }
+        const full = await fetchInvoiceDetails(token, apiBase, invoice.id);
+        if (!full) return invoice;
+        const merged = normalizeInvoice(full);
+        return {
+          ...invoice,
+          ...merged,
+          recipient: invoice.recipient !== '—' ? invoice.recipient : merged.recipient,
+          phone: invoice.phone || merged.phone,
+          amount: invoice.amount || merged.amount,
+          dueDate: invoice.dueDate || merged.dueDate
+        };
+      })
+    );
+    enriched.push(...details);
+  }
+
+  return enriched;
 }
 
 function isUnpaid(invoice) {
@@ -243,6 +302,8 @@ export default async (req) => {
     } catch (_) {
       invoices = await listAndFilterUnpaid(token, apiBase);
     }
+
+    invoices = await attachPayLinks(token, apiBase, invoices);
 
     invoices.sort((a, b) =>
       String(a.recipient || '').localeCompare(String(b.recipient || ''), undefined, {

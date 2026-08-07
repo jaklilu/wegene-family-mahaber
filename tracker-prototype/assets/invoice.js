@@ -48,8 +48,9 @@
 
     body.innerHTML = invoices.map((invoice) => {
       const member = [invoice.recipient, invoice.phone].filter(Boolean).join(' · ');
-      const link = invoice.viewUrl
-        ? `<a href="${escapeHtml(invoice.viewUrl)}" target="_blank" rel="noopener noreferrer">Open</a>`
+      const payHref = invoice.payUrl || invoice.viewUrl;
+      const link = payHref
+        ? `<a class="invoice-pay-link" href="${escapeHtml(payHref)}" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>`
         : '—';
       return `<tr>
         <td data-label="Invoice">${escapeHtml(invoice.number)}</td>
@@ -57,7 +58,7 @@
         <td data-label="Amount">${escapeHtml(invoice.amount || '—')}</td>
         <td data-label="Due">${escapeHtml(formatDate(invoice.dueDate))}</td>
         <td data-label="Status"><span class="badge waiting">${escapeHtml(invoice.status)}</span></td>
-        <td data-label="Link">${link}</td>
+        <td data-label="Pay">${link}</td>
       </tr>`;
     }).join('');
   }

@@ -489,6 +489,21 @@ body.is-authenticated #admin-shell { display:block !important; }
 .invoice-table td a {
   font-weight: 850;
 }
+.invoice-pay-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0070ba, #003087);
+  color: #fff !important;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.invoice-pay-link:hover {
+  filter: brightness(1.05);
+}
 @keyframes notice-pop {
   0% { transform: scale(0.96); opacity: 0.35; }
   60% { transform: scale(1.02); }
