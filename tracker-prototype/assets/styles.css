@@ -600,8 +600,15 @@ body.is-authenticated #admin-shell { display:block !important; }
 }
 .invoice-result-card {
   display: grid;
-  gap: 10px;
-  padding: 14px 16px;
+  grid-template-columns:
+    minmax(9rem, 1.4fr)
+    minmax(5rem, 0.7fr)
+    minmax(5.5rem, 0.8fr)
+    minmax(6rem, 0.9fr)
+    auto;
+  gap: 10px 16px;
+  align-items: center;
+  padding: 12px 16px;
   border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,252,249,.9));
@@ -612,61 +619,39 @@ body.is-authenticated #admin-shell { display:block !important; }
   width: auto;
   min-height: 36px;
   margin-top: 0;
-  order: initial;
   flex: 0 0 auto;
-  align-self: end;
-}
-.invoice-result-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 .invoice-result-name {
   margin: 0;
   color: var(--green-dark);
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 950;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
-.invoice-result-meta {
-  margin: 0;
+.invoice-field {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: 10px 14px;
-  align-items: end;
-}
-.invoice-due-pay {
-  display: flex;
-  align-items: end;
-  justify-content: flex-start;
-  gap: 10px;
-}
-.invoice-due-pay > div {
-  display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
-.invoice-result-meta div {
-  display: grid;
-  gap: 4px;
-}
-.invoice-result-meta dt {
+.invoice-field-label {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.invoice-result-meta dd {
-  margin: 0;
+.invoice-field-value {
   color: var(--ink);
   font-weight: 850;
+  line-height: 1.2;
+}
+.invoice-result-pay {
+  justify-self: end;
 }
 .invoice-result-amount {
   color: var(--green-dark) !important;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 950 !important;
 }
 .invoice-empty {
@@ -920,12 +905,20 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
     width: auto;
     min-height: 36px;
   }
-  .invoice-result-meta {
-    grid-template-columns: 1fr;
+  .invoice-result-card {
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
   }
-  .invoice-due-pay {
-    align-items: center;
-    justify-content: space-between;
+  .invoice-result-name {
+    grid-column: 1 / -1;
+    font-size: 1.15rem;
+  }
+  .invoice-result-pay {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+  .invoice-result-pay .invoice-pay-link {
+    width: 100%;
   }
   .member-list td {
     display:flex;

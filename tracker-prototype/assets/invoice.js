@@ -73,20 +73,22 @@
       : '<span class="hint">Pay link unavailable</span>';
 
     return `<article class="invoice-result-card">
-      <div class="invoice-result-top">
-        <p class="invoice-result-name">${escapeHtml(name)}</p>
+      <p class="invoice-result-name">${escapeHtml(name)}</p>
+      <div class="invoice-field">
+        <span class="invoice-field-label">Invoice</span>
+        <span class="invoice-field-value">${escapeHtml(invoice.number)}</span>
       </div>
-      <dl class="invoice-result-meta">
-        <div><dt>Invoice</dt><dd>${escapeHtml(invoice.number)}</dd></div>
-        <div><dt>Amount</dt><dd class="invoice-result-amount">${escapeHtml(invoice.amount || '—')}</dd></div>
-        <div class="invoice-due-pay">
-          <div>
-            <dt>Due Date</dt>
-            <dd>${escapeHtml(formatDate(invoice.dueDate || invoice.invoiceDate || invoice.sentDate))}</dd>
-          </div>
-          ${payButton}
-        </div>
-      </dl>
+      <div class="invoice-field">
+        <span class="invoice-field-label">Amount</span>
+        <span class="invoice-field-value invoice-result-amount">${escapeHtml(invoice.amount || '—')}</span>
+      </div>
+      <div class="invoice-field">
+        <span class="invoice-field-label">Due Date</span>
+        <span class="invoice-field-value">${escapeHtml(formatDate(invoice.dueDate || invoice.invoiceDate || invoice.sentDate))}</span>
+      </div>
+      <div class="invoice-result-pay">
+        ${payButton}
+      </div>
     </article>`;
   }
 
