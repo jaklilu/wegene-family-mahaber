@@ -80,7 +80,8 @@ Seed schedule notes live in `tracker-prototype/data/state.json` → `scheduleRul
 - Defined in `tracker-prototype/assets/config.js`
 - Session keys in `sessionStorage` via `assets/auth.js`
 - Sticky menu: Tracker / Check Invoice / Admin / Log out; mobile hamburger (`assets/nav.js`)
-- **Check Invoice** menu item opens `https://wegene.pythonanywhere.com/` directly in a new tab
+- **Check Invoice** (`invoice.html`) loads unpaid PayPal invoices via Netlify function `/api/paypal-invoices`
+- Netlify env vars required: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, optional `PAYPAL_API_BASE` (`https://api-m.paypal.com` live or `https://api-m.sandbox.paypal.com` sandbox)
 
 > Production note: these are **client-side demo gates**. Real production should use Netlify/server auth or similar. Optional env: `TRACKER_WRITE_PASSWORD` for the shared API write gate (defaults to member password).
 

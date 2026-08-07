@@ -476,6 +476,19 @@ body.is-authenticated #admin-shell { display:block !important; }
 .notice.notice-pop {
   animation: notice-pop 0.45s ease;
 }
+.invoice-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.invoice-toolbar .hint {
+  margin: 0;
+}
+.invoice-table td a {
+  font-weight: 850;
+}
 @keyframes notice-pop {
   0% { transform: scale(0.96); opacity: 0.35; }
   60% { transform: scale(1.02); }
