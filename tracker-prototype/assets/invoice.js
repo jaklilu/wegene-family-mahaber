@@ -75,7 +75,6 @@
     return `<article class="invoice-result-card">
       <div class="invoice-result-top">
         <p class="invoice-result-name">${escapeHtml(name)}</p>
-        <span class="badge waiting">${escapeHtml(invoice.status)}</span>
       </div>
       <dl class="invoice-result-meta">
         <div><dt>Invoice</dt><dd>${escapeHtml(invoice.number)}</dd></div>
