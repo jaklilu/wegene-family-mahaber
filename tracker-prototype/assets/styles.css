@@ -575,6 +575,87 @@ body.is-authenticated #admin-shell { display:block !important; }
 .invoice-page #invoice-refresh {
   min-width: 120px;
 }
+.invoice-select-label {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--green-dark);
+  font-weight: 850;
+  font-size: 0.95rem;
+}
+.invoice-page #invoice-member-select {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ink);
+  font-weight: 750;
+  padding: 12px 14px;
+}
+.invoice-results {
+  display: grid;
+  gap: 12px;
+}
+.invoice-result-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,252,249,.9));
+  border: 1px solid rgba(31, 90, 57, 0.14);
+  box-shadow: 0 10px 24px rgba(19, 55, 34, 0.08);
+}
+.invoice-result-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.invoice-result-name {
+  margin: 0;
+  color: var(--green-dark);
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+.invoice-result-meta {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.invoice-result-meta div {
+  display: grid;
+  gap: 4px;
+}
+.invoice-result-meta dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.invoice-result-meta dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 850;
+}
+.invoice-result-amount {
+  color: var(--green-dark) !important;
+  font-size: 1.15rem;
+  font-weight: 950 !important;
+}
+.invoice-empty {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 750;
+}
+.invoice-result-card .invoice-pay-link {
+  width: min(100%, 260px);
+  min-height: 52px;
+}
 @keyframes notice-pop {
   0% { transform: scale(0.96); opacity: 0.35; }
   60% { transform: scale(1.02); }
@@ -785,9 +866,11 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
     width: 100%;
     min-height: 48px;
   }
-  .invoice-page .invoice-table-wrap {
-    background: transparent;
-    border: 0;
+  .invoice-result-meta {
+    grid-template-columns: 1fr;
+  }
+  .invoice-result-card .invoice-pay-link {
+    width: 100%;
   }
   .member-list td {
     display:flex;

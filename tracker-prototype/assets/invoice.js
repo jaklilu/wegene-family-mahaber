@@ -4,6 +4,7 @@
   const API_PATH = CONFIG.paypalInvoicesApiPath || '/api/paypal-invoices';
 
   const $ = (id) => document.getElementById(id);
+  let allInvoices = [];
 
   function formatDate(value) {
     if (!value) return '—';
@@ -20,8 +21,82 @@
       .replace(/"/g, '&quot;');
   }
 
-  function renderInvoices(payload) {
-    const body = $('invoice-table-body');
+  function recipientKey(invoice) {
+    return String(invoice.recipient || '').trim();
+  }
+
+  function uniqueNames(invoices) {
+    const names = [...new Set(invoices.map(recipientKey).filter((name) => name && name !== '—'))];
+    return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  }
+
+  function fillNameDropdown(invoices) {
+    const select = $('invoice-member-select');
+    if (!select) return;
+
+    const names = uniqueNames(invoices);
+    const previous = select.value;
+    select.innerHTML =
+      '<option value="">Choose your name…</option>' +
+      names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    select.disabled = names.length === 0;
+
+    if (previous && names.includes(previous)) {
+      select.value = previous;
+      renderSelectedMember(previous);
+    } else {
+      select.value = '';
+      hideResults();
+    }
+  }
+
+  function hideResults() {
+    const results = $('invoice-results');
+    if (results) {
+      results.hidden = true;
+      results.innerHTML = '';
+    }
+  }
+
+  function renderSelectedMember(name) {
+    const results = $('invoice-results');
+    if (!results) return;
+
+    if (!name) {
+      hideResults();
+      return;
+    }
+
+    const matches = allInvoices.filter((invoice) => recipientKey(invoice) === name);
+    if (!matches.length) {
+      results.hidden = false;
+      results.innerHTML = `<p class="invoice-empty">No unpaid invoice found for <strong>${escapeHtml(name)}</strong>.</p>`;
+      return;
+    }
+
+    results.hidden = false;
+    results.innerHTML = matches.map((invoice) => {
+      const payHref = invoice.payUrl || invoice.viewUrl;
+      const payButton = payHref
+        ? `<a class="invoice-pay-link" href="${escapeHtml(payHref)}" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>`
+        : '<span class="hint">Pay link unavailable</span>';
+
+      return `<article class="invoice-result-card">
+        <div class="invoice-result-top">
+          <p class="invoice-result-name">${escapeHtml(name)}</p>
+          <span class="badge waiting">${escapeHtml(invoice.status)}</span>
+        </div>
+        <dl class="invoice-result-meta">
+          <div><dt>Invoice</dt><dd>${escapeHtml(invoice.number)}</dd></div>
+          <div><dt>Amount</dt><dd class="invoice-result-amount">${escapeHtml(invoice.amount || '—')}</dd></div>
+          <div><dt>Due</dt><dd>${escapeHtml(formatDate(invoice.dueDate))}</dd></div>
+        </dl>
+        ${payButton}
+      </article>`;
+    }).join('');
+  }
+
+  function showLoadedState(invoices) {
     const summary = $('invoice-summary');
     const error = $('invoice-error');
     if (error) {
@@ -29,46 +104,28 @@
       error.textContent = '';
     }
 
-    const invoices = (payload.invoices || []).slice().sort((a, b) =>
-      String(a.recipient || '').localeCompare(String(b.recipient || ''), undefined, {
-        sensitivity: 'base'
-      })
-    );
+    allInvoices = invoices;
+    fillNameDropdown(invoices);
+
     if (summary) {
-      summary.textContent = invoices.length
-        ? `${invoices.length} unpaid invoice${invoices.length === 1 ? '' : 's'}`
+      const count = uniqueNames(invoices).length;
+      summary.textContent = count
+        ? `${count} member${count === 1 ? '' : 's'} with unpaid invoices`
         : 'No unpaid invoices found.';
     }
-
-    if (!body) return;
-    if (!invoices.length) {
-      body.innerHTML = '<tr><td colspan="6">No unpaid invoices right now.</td></tr>';
-      return;
-    }
-
-    body.innerHTML = invoices.map((invoice) => {
-      const member = [invoice.recipient, invoice.phone].filter(Boolean).join(' · ');
-      const payHref = invoice.payUrl || invoice.viewUrl;
-      const link = payHref
-        ? `<a class="invoice-pay-link" href="${escapeHtml(payHref)}" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>`
-        : '—';
-      return `<tr>
-        <td data-label="Invoice"><strong>${escapeHtml(invoice.number)}</strong></td>
-        <td data-label="Member">${escapeHtml(member || '—')}</td>
-        <td data-label="Amount" class="date-cell">${escapeHtml(invoice.amount || '—')}</td>
-        <td data-label="Due">${escapeHtml(formatDate(invoice.dueDate))}</td>
-        <td data-label="Status"><span class="badge waiting">${escapeHtml(invoice.status)}</span></td>
-        <td data-label="Pay">${link}</td>
-      </tr>`;
-    }).join('');
   }
 
   function showError(message) {
     const error = $('invoice-error');
-    const body = $('invoice-table-body');
     const summary = $('invoice-summary');
+    const select = $('invoice-member-select');
+    allInvoices = [];
+    hideResults();
+    if (select) {
+      select.innerHTML = '<option value="">Choose your name…</option>';
+      select.disabled = true;
+    }
     if (summary) summary.textContent = 'Could not load invoices.';
-    if (body) body.innerHTML = '<tr><td colspan="6">Unable to load unpaid invoices.</td></tr>';
     if (error) {
       error.hidden = false;
       error.textContent = message;
@@ -77,9 +134,13 @@
 
   async function loadInvoices() {
     const summary = $('invoice-summary');
-    const body = $('invoice-table-body');
-    if (summary) summary.textContent = 'Loading unpaid invoices from PayPal…';
-    if (body) body.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    const select = $('invoice-member-select');
+    if (summary) summary.textContent = 'Loading names…';
+    if (select) {
+      select.disabled = true;
+      select.innerHTML = '<option value="">Loading…</option>';
+    }
+    hideResults();
 
     try {
       const response = await fetch(API_PATH, { cache: 'no-store' });
@@ -87,7 +148,12 @@
       if (!response.ok) {
         throw new Error(data.error || `Request failed (${response.status})`);
       }
-      renderInvoices(data);
+      const invoices = (data.invoices || []).slice().sort((a, b) =>
+        String(a.recipient || '').localeCompare(String(b.recipient || ''), undefined, {
+          sensitivity: 'base'
+        })
+      );
+      showLoadedState(invoices);
     } catch (err) {
       showError(err.message || 'Could not load PayPal invoices.');
     }
@@ -109,6 +175,9 @@
     location.reload();
   });
   $('invoice-refresh')?.addEventListener('click', loadInvoices);
+  $('invoice-member-select')?.addEventListener('change', (event) => {
+    renderSelectedMember(event.target.value);
+  });
 
   await loadInvoices();
 })();

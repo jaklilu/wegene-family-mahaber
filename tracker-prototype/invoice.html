@@ -48,8 +48,8 @@
         <img class="site-logo header-logo" src="assets/images/wegene-logo.png" alt="Wegene logo" />
         <div class="invoice-hero-copy">
           <p class="invoice-kicker">Wegene Family Mahaber</p>
-          <h1>Unpaid Invoices</h1>
-          <p class="invoice-sub">Pay your dues securely through PayPal.</p>
+          <h1>Check Invoice</h1>
+          <p class="invoice-sub">Select your name to see unpaid dues and pay on PayPal.</p>
         </div>
       </div>
     </header>
@@ -57,27 +57,17 @@
     <main class="stack invoice-main">
       <section class="card stack invoice-panel">
         <div class="invoice-toolbar">
-          <p id="invoice-summary" class="invoice-summary">Loading unpaid invoices from PayPal…</p>
+          <p id="invoice-summary" class="invoice-summary">Loading names…</p>
           <button type="button" class="ghost" id="invoice-refresh">Refresh</button>
         </div>
+
+        <label class="invoice-select-label" for="invoice-member-select">Your name</label>
+        <select id="invoice-member-select" disabled>
+          <option value="">Choose your name…</option>
+        </select>
+
         <div id="invoice-error" class="notice notice-error" hidden></div>
-        <div class="member-table-wrap invoice-table-wrap">
-          <table class="member-list invoice-table">
-            <thead>
-              <tr>
-                <th>Invoice</th>
-                <th>Member</th>
-                <th>Amount</th>
-                <th>Due</th>
-                <th>Status</th>
-                <th>Pay</th>
-              </tr>
-            </thead>
-            <tbody id="invoice-table-body">
-              <tr><td colspan="6">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div id="invoice-results" class="invoice-results" hidden></div>
       </section>
     </main>
   </div>
