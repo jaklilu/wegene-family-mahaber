@@ -10,5 +10,5 @@ window.WEGENE_CONFIG = {
   trackerApiPath: '/api/tracker-data',
   paypalInvoicesApiPath: '/api/paypal-invoices',
   // Always include these names in Check Invoice even if currently paid up.
-  invoiceExtraNames: ['Samson', 'Mimi Mendaye', 'Alem Desta']
+  invoiceExtraNames: ['Samson Zegeye', 'Mimi Mendaye', 'Alem Desta']
 };
