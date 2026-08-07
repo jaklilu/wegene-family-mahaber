@@ -53,9 +53,9 @@
         ? `<a class="invoice-pay-link" href="${escapeHtml(payHref)}" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>`
         : '—';
       return `<tr>
-        <td data-label="Invoice">${escapeHtml(invoice.number)}</td>
+        <td data-label="Invoice"><strong>${escapeHtml(invoice.number)}</strong></td>
         <td data-label="Member">${escapeHtml(member || '—')}</td>
-        <td data-label="Amount">${escapeHtml(invoice.amount || '—')}</td>
+        <td data-label="Amount" class="date-cell">${escapeHtml(invoice.amount || '—')}</td>
         <td data-label="Due">${escapeHtml(formatDate(invoice.dueDate))}</td>
         <td data-label="Status"><span class="badge waiting">${escapeHtml(invoice.status)}</span></td>
         <td data-label="Pay">${link}</td>

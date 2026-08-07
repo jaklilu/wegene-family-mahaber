@@ -483,8 +483,12 @@ body.is-authenticated #admin-shell { display:block !important; }
   justify-content: space-between;
   flex-wrap: wrap;
 }
-.invoice-toolbar .hint {
+.invoice-toolbar .hint,
+.invoice-summary {
   margin: 0;
+  color: var(--green-dark);
+  font-weight: 850;
+  font-size: 1.02rem;
 }
 .invoice-table td a {
   font-weight: 850;
@@ -503,6 +507,73 @@ body.is-authenticated #admin-shell { display:block !important; }
 }
 .invoice-pay-link:hover {
   filter: brightness(1.05);
+}
+
+/* Check Invoice page atmosphere */
+.invoice-page {
+  font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.invoice-page .invoice-hero h1,
+.invoice-page .invoice-hero-copy h1 {
+  font-family: Fraunces, Georgia, serif;
+  letter-spacing: -0.03em;
+}
+.invoice-page .invoice-hero {
+  padding-top: 18px;
+  padding-bottom: 6px;
+}
+.invoice-page .invoice-hero-copy {
+  text-align: left;
+}
+.invoice-page .invoice-kicker {
+  margin: 0 0 4px;
+  color: var(--green-dark);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.invoice-page .invoice-sub {
+  margin: 8px 0 0;
+  color: rgba(23, 37, 29, 0.78);
+  font-weight: 650;
+  max-width: 34rem;
+}
+.invoice-page .invoice-main {
+  padding-bottom: 56px;
+}
+.invoice-page .invoice-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 252, 240, 0.88)),
+    rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 24px 60px rgba(19, 55, 34, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.invoice-page .invoice-table-wrap {
+  background:
+    linear-gradient(135deg, rgba(216, 244, 221, 0.35), rgba(255, 241, 200, 0.28)),
+    rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(31, 90, 57, 0.14);
+  overflow: hidden;
+}
+.invoice-page .invoice-table th {
+  background: linear-gradient(135deg, #08672f, #1b9b4d 55%, #d9a515);
+}
+.invoice-page .invoice-table td[data-label="Amount"],
+.invoice-page .invoice-table .date-cell {
+  font-weight: 900;
+  color: var(--green-dark);
+}
+.invoice-page .invoice-toolbar {
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(31, 90, 57, 0.12);
+  margin-bottom: 4px;
+}
+.invoice-page #invoice-refresh {
+  min-width: 120px;
 }
 @keyframes notice-pop {
   0% { transform: scale(0.96); opacity: 0.35; }
@@ -701,6 +772,22 @@ footer { text-align:center; color:var(--muted); padding: 24px 20px 34px; }
     overflow:hidden;
     box-shadow:0 8px 18px rgba(23,80,46,.08);
     background: rgba(255,255,255,.92);
+  }
+  .invoice-page .invoice-table tr {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,252,249,.92));
+    border-color: rgba(31, 90, 57, 0.16);
+  }
+  .invoice-page .invoice-hero-copy {
+    text-align: left;
+  }
+  .invoice-page .invoice-pay-link {
+    width: 100%;
+    min-height: 48px;
+  }
+  .invoice-page .invoice-table-wrap {
+    background: transparent;
+    border: 0;
   }
   .member-list td {
     display:flex;
