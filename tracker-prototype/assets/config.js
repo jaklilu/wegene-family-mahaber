@@ -7,6 +7,5 @@ window.WEGENE_CONFIG = {
   adminPassword: 'AdminDemo2026!',
   memberSessionStorageKey: 'wegene-member-session-v1',
   adminSessionStorageKey: 'wegene-admin-session-v1',
-  trackerApiPath: '/api/tracker-data',
-  invoiceLookupUrl: 'https://wegene.pythonanywhere.com/'
+  trackerApiPath: '/api/tracker-data'
 };
