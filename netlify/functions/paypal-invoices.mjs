@@ -244,7 +244,11 @@ export default async (req) => {
       invoices = await listAndFilterUnpaid(token, apiBase);
     }
 
-    invoices.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')));
+    invoices.sort((a, b) =>
+      String(a.recipient || '').localeCompare(String(b.recipient || ''), undefined, {
+        sensitivity: 'base'
+      })
+    );
 
     return json(200, {
       ok: true,

@@ -29,7 +29,11 @@
       error.textContent = '';
     }
 
-    const invoices = payload.invoices || [];
+    const invoices = (payload.invoices || []).slice().sort((a, b) =>
+      String(a.recipient || '').localeCompare(String(b.recipient || ''), undefined, {
+        sensitivity: 'base'
+      })
+    );
     if (summary) {
       summary.textContent = invoices.length
         ? `${invoices.length} unpaid invoice${invoices.length === 1 ? '' : 's'}`
