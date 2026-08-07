@@ -669,6 +669,21 @@ body.is-authenticated #admin-shell { display:block !important; }
   font-weight: 950;
   letter-spacing: -0.02em;
 }
+.invoice-paypal-quiet {
+  color: inherit !important;
+  font-weight: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.invoice-paypal-quiet:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.invoice-all-note {
+  margin: 0;
+  color: var(--green-dark);
+  font-weight: 850;
+}
 .invoice-result-card .invoice-pay-link {
   width: min(100%, 260px);
   min-height: 52px;

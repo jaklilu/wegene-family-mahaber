@@ -2,6 +2,7 @@
   const AUTH = window.WegeneAuth;
   const CONFIG = window.WEGENE_CONFIG || {};
   const API_PATH = CONFIG.paypalInvoicesApiPath || '/api/paypal-invoices';
+  const showAll = new URLSearchParams(location.search).get('all') === '1';
 
   const $ = (id) => document.getElementById(id);
   let allInvoices = [];
@@ -30,6 +31,13 @@
     return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   }
 
+  function setPickerVisible(visible) {
+    const label = document.querySelector('.invoice-select-label');
+    const select = $('invoice-member-select');
+    if (label) label.hidden = !visible;
+    if (select) select.hidden = !visible;
+  }
+
   function fillNameDropdown(invoices) {
     const select = $('invoice-member-select');
     if (!select) return;
@@ -46,7 +54,7 @@
       renderSelectedMember(previous);
     } else {
       select.value = '';
-      hideResults();
+      if (!showAll) hideResults();
     }
   }
 
@@ -56,6 +64,45 @@
       results.hidden = true;
       results.innerHTML = '';
     }
+  }
+
+  function invoiceCard(invoice, name) {
+    const payHref = invoice.payUrl || invoice.viewUrl;
+    const payButton = payHref
+      ? `<a class="invoice-pay-link" href="${escapeHtml(payHref)}" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>`
+      : '<span class="hint">Pay link unavailable</span>';
+
+    return `<article class="invoice-result-card">
+      <div class="invoice-result-top">
+        <p class="invoice-result-name">${escapeHtml(name)}</p>
+        <span class="badge waiting">${escapeHtml(invoice.status)}</span>
+      </div>
+      <dl class="invoice-result-meta">
+        <div><dt>Invoice</dt><dd>${escapeHtml(invoice.number)}</dd></div>
+        <div><dt>Amount</dt><dd class="invoice-result-amount">${escapeHtml(invoice.amount || '—')}</dd></div>
+        <div><dt>Due</dt><dd>${escapeHtml(formatDate(invoice.dueDate))}</dd></div>
+      </dl>
+      ${payButton}
+    </article>`;
+  }
+
+  function renderAllInvoices() {
+    const results = $('invoice-results');
+    if (!results) return;
+
+    if (!allInvoices.length) {
+      results.hidden = false;
+      results.innerHTML = `<div class="invoice-empty-card">
+        <p class="invoice-empty-title">All clear!</p>
+        <p class="invoice-empty">There are no unpaid invoices at the moment. Thank you for supporting Wegene Family Mahaber.</p>
+      </div>`;
+      return;
+    }
+
+    results.hidden = false;
+    results.innerHTML =
+      `<p class="invoice-all-note">${allInvoices.length} unpaid invoice${allInvoices.length === 1 ? '' : 's'}</p>` +
+      allInvoices.map((invoice) => invoiceCard(invoice, recipientKey(invoice) || '—')).join('');
   }
 
   function renderSelectedMember(name) {
@@ -78,25 +125,7 @@
     }
 
     results.hidden = false;
-    results.innerHTML = matches.map((invoice) => {
-      const payHref = invoice.payUrl || invoice.viewUrl;
-      const payButton = payHref
-        ? `<a class="invoice-pay-link" href="${escapeHtml(payHref)}" target="_blank" rel="noopener noreferrer">Pay with PayPal</a>`
-        : '<span class="hint">Pay link unavailable</span>';
-
-      return `<article class="invoice-result-card">
-        <div class="invoice-result-top">
-          <p class="invoice-result-name">${escapeHtml(name)}</p>
-          <span class="badge waiting">${escapeHtml(invoice.status)}</span>
-        </div>
-        <dl class="invoice-result-meta">
-          <div><dt>Invoice</dt><dd>${escapeHtml(invoice.number)}</dd></div>
-          <div><dt>Amount</dt><dd class="invoice-result-amount">${escapeHtml(invoice.amount || '—')}</dd></div>
-          <div><dt>Due</dt><dd>${escapeHtml(formatDate(invoice.dueDate))}</dd></div>
-        </dl>
-        ${payButton}
-      </article>`;
-    }).join('');
+    results.innerHTML = matches.map((invoice) => invoiceCard(invoice, name)).join('');
   }
 
   function showLoadedState(invoices) {
@@ -108,6 +137,19 @@
     }
 
     allInvoices = invoices;
+
+    if (showAll) {
+      setPickerVisible(false);
+      if (summary) {
+        summary.textContent = invoices.length
+          ? `${invoices.length} unpaid invoice${invoices.length === 1 ? '' : 's'}`
+          : 'Great news — everyone is paid up right now.';
+      }
+      renderAllInvoices();
+      return;
+    }
+
+    setPickerVisible(true);
     fillNameDropdown(invoices);
 
     if (summary) {
@@ -149,12 +191,12 @@
   async function loadInvoices() {
     const summary = $('invoice-summary');
     const select = $('invoice-member-select');
-    if (summary) summary.textContent = 'Loading names…';
-    if (select) {
+    if (summary) summary.textContent = showAll ? 'Loading unpaid invoices…' : 'Loading names…';
+    if (select && !showAll) {
       select.disabled = true;
       select.innerHTML = '<option value="">Loading…</option>';
     }
-    hideResults();
+    if (!showAll) hideResults();
 
     try {
       const response = await fetch(API_PATH, { cache: 'no-store' });
@@ -192,6 +234,15 @@
   $('invoice-member-select')?.addEventListener('change', (event) => {
     renderSelectedMember(event.target.value);
   });
+
+  if (showAll) {
+    const title = document.querySelector('.invoice-hero-copy h1');
+    const sub = document.querySelector('.invoice-sub');
+    if (title) title.textContent = 'Unpaid Invoices';
+    if (sub) {
+      sub.innerHTML = 'Full unpaid list. <a class="invoice-paypal-quiet" href="invoice.html">Back to name lookup</a>.';
+    }
+  }
 
   await loadInvoices();
 })();
