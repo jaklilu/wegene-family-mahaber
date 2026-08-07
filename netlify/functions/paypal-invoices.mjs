@@ -1,10 +1,22 @@
-const CLIENT_ID = String(process.env.PAYPAL_CLIENT_ID || '').trim();
-const CLIENT_SECRET = String(process.env.PAYPAL_CLIENT_SECRET || '').trim();
-const PAYPAL_MODE = String(process.env.PAYPAL_MODE || 'live').trim().toLowerCase();
-const PAYPAL_API_BASE = String(
-  process.env.PAYPAL_API_BASE ||
-    (PAYPAL_MODE === 'sandbox' ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com')
-).replace(/\/$/, '');
+function cleanEnv(value) {
+  return String(value || '')
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/\r?\n/g, '')
+    .trim();
+}
+
+const CLIENT_ID = cleanEnv(
+  process.env.PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENTID || process.env.CLIENT_ID
+);
+const CLIENT_SECRET = cleanEnv(
+  process.env.PAYPAL_CLIENT_SECRET ||
+    process.env.PAYPAL_SECRET ||
+    process.env.PAYPAL_SECRET_KEY ||
+    process.env.CLIENT_SECRET
+);
+const PAYPAL_MODE = cleanEnv(process.env.PAYPAL_MODE || 'live').toLowerCase();
+const CUSTOM_API_BASE = cleanEnv(process.env.PAYPAL_API_BASE).replace(/\/$/, '');
 
 const UNPAID_STATUSES = new Set([
   'SENT',
@@ -24,23 +36,55 @@ function json(status, body) {
   });
 }
 
+function credentialDiagnostics() {
+  return {
+    hasClientId: Boolean(CLIENT_ID),
+    hasClientSecret: Boolean(CLIENT_SECRET),
+    clientIdLength: CLIENT_ID.length,
+    clientSecretLength: CLIENT_SECRET.length,
+    clientIdPrefix: CLIENT_ID ? CLIENT_ID.slice(0, 6) : '',
+    mode: PAYPAL_MODE || 'live',
+    customApiBase: CUSTOM_API_BASE || null
+  };
+}
+
+function apiBasesToTry() {
+  if (CUSTOM_API_BASE) return [CUSTOM_API_BASE];
+  if (PAYPAL_MODE === 'sandbox') {
+    return ['https://api-m.sandbox.paypal.com', 'https://api-m.paypal.com'];
+  }
+  return ['https://api-m.paypal.com', 'https://api-m.sandbox.paypal.com'];
+}
+
 async function getAccessToken() {
   const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
-  const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: 'grant_type=client_credentials'
-  });
+  const bases = apiBasesToTry();
+  const errors = [];
 
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.access_token) {
-    const detail = data.error_description || data.error || data.message || `HTTP ${response.status}`;
-    throw new Error(`PayPal auth failed: ${detail}`);
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.access_token) {
+        return { token: data.access_token, apiBase: base };
+      }
+
+      const detail = data.error_description || data.error || data.message || `HTTP ${response.status}`;
+      errors.push(`${base}: ${detail}`);
+    } catch (error) {
+      errors.push(`${base}: ${error.message || 'network error'}`);
+    }
   }
-  return data.access_token;
+
+  throw new Error(`PayPal auth failed: ${errors.join(' | ')}`);
 }
 
 function money(value) {
@@ -96,13 +140,13 @@ function isUnpaid(invoice) {
   return UNPAID_STATUSES.has(String(invoice.status || '').toUpperCase());
 }
 
-async function searchUnpaidInvoices(token) {
+async function searchUnpaidInvoices(token, apiBase) {
   const invoices = [];
   let page = 1;
   const pageSize = 100;
 
   while (page <= 20) {
-    const url = `${PAYPAL_API_BASE}/v2/invoicing/search-invoices?page=${page}&page_size=${pageSize}&total_required=true`;
+    const url = `${apiBase}/v2/invoicing/search-invoices?page=${page}&page_size=${pageSize}&total_required=true`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -132,13 +176,13 @@ async function searchUnpaidInvoices(token) {
   return invoices;
 }
 
-async function listAndFilterUnpaid(token) {
+async function listAndFilterUnpaid(token, apiBase) {
   const invoices = [];
   let page = 1;
   const pageSize = 100;
 
   while (page <= 20) {
-    const url = `${PAYPAL_API_BASE}/v2/invoicing/invoices?page=${page}&page_size=${pageSize}&total_required=true`;
+    const url = `${apiBase}/v2/invoicing/invoices?page=${page}&page_size=${pageSize}&total_required=true`;
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -181,17 +225,18 @@ export default async (req) => {
 
   if (!CLIENT_ID || !CLIENT_SECRET) {
     return json(500, {
-      error: 'PayPal credentials are missing. Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in Netlify.'
+      error: 'PayPal credentials are missing. Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in Netlify.',
+      diagnostics: credentialDiagnostics()
     });
   }
 
   try {
-    const token = await getAccessToken();
+    const { token, apiBase } = await getAccessToken();
     let invoices;
     try {
-      invoices = await searchUnpaidInvoices(token);
+      invoices = await searchUnpaidInvoices(token, apiBase);
     } catch (_) {
-      invoices = await listAndFilterUnpaid(token);
+      invoices = await listAndFilterUnpaid(token, apiBase);
     }
 
     invoices.sort((a, b) => String(a.dueDate || '').localeCompare(String(b.dueDate || '')));
@@ -200,14 +245,15 @@ export default async (req) => {
       ok: true,
       count: invoices.length,
       invoices,
-      mode: PAYPAL_MODE === 'sandbox' ? 'sandbox' : 'live',
+      apiBase,
       fetchedAt: new Date().toISOString()
     });
   } catch (error) {
     return json(502, {
       error: error.message || 'Could not load PayPal invoices.',
+      diagnostics: credentialDiagnostics(),
       hint:
-        'Confirm PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are from the same PayPal app, with no extra spaces. For sandbox keys set PAYPAL_MODE=sandbox (or PAYPAL_API_BASE=https://api-m.sandbox.paypal.com), then redeploy.'
+        'In Netlify, use exact names PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET from the same PayPal Developer app. No quotes. After saving, Trigger deploy. Live business invoices need Live credentials (not Sandbox).'
     });
   }
 };
