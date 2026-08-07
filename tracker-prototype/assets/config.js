@@ -8,5 +8,7 @@ window.WEGENE_CONFIG = {
   memberSessionStorageKey: 'wegene-member-session-v1',
   adminSessionStorageKey: 'wegene-admin-session-v1',
   trackerApiPath: '/api/tracker-data',
-  paypalInvoicesApiPath: '/api/paypal-invoices'
+  paypalInvoicesApiPath: '/api/paypal-invoices',
+  // Always include these names in Check Invoice even if currently paid up.
+  invoiceExtraNames: ['Samson', 'Mimi', 'Alem']
 };

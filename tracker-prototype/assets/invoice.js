@@ -4,6 +4,8 @@
   const API_PATH = CONFIG.paypalInvoicesApiPath || '/api/paypal-invoices';
   const showAll = new URLSearchParams(location.search).get('all') === '1';
 
+  const EXTRA_NAMES = Array.isArray(CONFIG.invoiceExtraNames) ? CONFIG.invoiceExtraNames : [];
+
   const $ = (id) => document.getElementById(id);
   let allInvoices = [];
 
@@ -26,9 +28,26 @@
     return String(invoice.recipient || '').trim();
   }
 
+  function nameMatches(selectedName, recipientName) {
+    const selected = String(selectedName || '').trim().toLowerCase();
+    const recipient = String(recipientName || '').trim().toLowerCase();
+    if (!selected || !recipient) return false;
+    if (selected === recipient) return true;
+    const recipientFirst = recipient.split(/\s+/)[0];
+    return selected === recipientFirst || recipient.startsWith(`${selected} `);
+  }
+
   function uniqueNames(invoices) {
-    const names = [...new Set(invoices.map(recipientKey).filter((name) => name && name !== '—'))];
-    return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    const names = new Set(invoices.map(recipientKey).filter((name) => name && name !== '—'));
+    EXTRA_NAMES.forEach((name) => {
+      const cleaned = String(name || '').trim();
+      if (cleaned) names.add(cleaned);
+    });
+    return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  }
+
+  function invoicesForName(name) {
+    return allInvoices.filter((invoice) => nameMatches(name, recipientKey(invoice)));
   }
 
   function setPickerVisible(visible) {
@@ -47,7 +66,7 @@
     select.innerHTML =
       '<option value="">Choose your name…</option>' +
       names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
-    select.disabled = names.length === 0;
+    select.disabled = false;
 
     if (previous && names.includes(previous)) {
       select.value = previous;
@@ -120,7 +139,7 @@
       return;
     }
 
-    const matches = allInvoices.filter((invoice) => recipientKey(invoice) === name);
+    const matches = invoicesForName(name);
     if (!matches.length) {
       results.hidden = false;
       results.innerHTML = `<div class="invoice-empty-card">
