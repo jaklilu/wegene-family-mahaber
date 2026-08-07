@@ -224,7 +224,7 @@ function isUnpaid(invoice) {
   return UNPAID_STATUSES.has(String(invoice.status || '').toUpperCase());
 }
 
-async function searchInvoicesByStatus(token, apiBase, statuses) {
+async function searchUnpaidInvoices(token, apiBase) {
   const invoices = [];
   let page = 1;
   const pageSize = 100;
@@ -238,7 +238,9 @@ async function searchInvoicesByStatus(token, apiBase, statuses) {
         'Content-Type': 'application/json',
         Accept: 'application/json'
       },
-      body: JSON.stringify({ status: statuses })
+      body: JSON.stringify({
+        status: ['SENT', 'PAYMENT_PENDING', 'PARTIALLY_PAID']
+      })
     });
 
     const data = await response.json().catch(() => ({}));
@@ -248,7 +250,7 @@ async function searchInvoicesByStatus(token, apiBase, statuses) {
     }
 
     const items = data.items || data.invoices || [];
-    invoices.push(...items.map(normalizeInvoice));
+    invoices.push(...items.map(normalizeInvoice).filter(isUnpaid));
 
     const totalPages = Number(data.total_pages || data.totalPages || 1);
     if (page >= totalPages || items.length === 0) break;
@@ -256,33 +258,6 @@ async function searchInvoicesByStatus(token, apiBase, statuses) {
   }
 
   return invoices;
-}
-
-async function searchUnpaidInvoices(token, apiBase) {
-  const invoices = await searchInvoicesByStatus(token, apiBase, [
-    'SENT',
-    'PAYMENT_PENDING',
-    'PARTIALLY_PAID'
-  ]);
-  return invoices.filter(isUnpaid);
-}
-
-async function collectRecipientNames(token, apiBase, unpaidInvoices) {
-  const names = new Set(
-    unpaidInvoices.map((invoice) => String(invoice.recipient || '').trim()).filter((name) => name && name !== '—')
-  );
-
-  try {
-    const paid = await searchInvoicesByStatus(token, apiBase, ['PAID', 'MARKED_AS_PAID']);
-    paid.forEach((invoice) => {
-      const name = String(invoice.recipient || '').trim();
-      if (name && name !== '—') names.add(name);
-    });
-  } catch (_) {
-    // Keep unpaid names if paid search fails.
-  }
-
-  return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 }
 
 async function listAndFilterUnpaid(token, apiBase) {
@@ -349,7 +324,6 @@ export default async (req) => {
     }
 
     invoices = await attachPayLinks(token, apiBase, invoices);
-    const names = await collectRecipientNames(token, apiBase, invoices);
 
     invoices.sort((a, b) =>
       String(a.recipient || '').localeCompare(String(b.recipient || ''), undefined, {
@@ -361,7 +335,6 @@ export default async (req) => {
       ok: true,
       count: invoices.length,
       invoices,
-      names,
       apiBase,
       fetchedAt: new Date().toISOString()
     });
