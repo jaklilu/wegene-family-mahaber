@@ -79,7 +79,8 @@ Seed schedule notes live in `tracker-prototype/data/state.json` → `scheduleRul
 - Admin password: `AdminDemo2026!`
 - Defined in `tracker-prototype/assets/config.js`
 - Session keys in `sessionStorage` via `assets/auth.js`
-- Sticky menu: Tracker / Admin / Log out; mobile hamburger (`assets/nav.js`)
+- Sticky menu: Tracker / Check Invoice / Admin / Log out; mobile hamburger (`assets/nav.js`)
+- **Check Invoice** tab (`invoice.html`) opens the existing invoice portal: `https://wegene.pythonanywhere.com/`
 
 > Production note: these are **client-side demo gates**. Real production should use Netlify/server auth or similar. Optional env: `TRACKER_WRITE_PASSWORD` for the shared API write gate (defaults to member password).
 
@@ -233,7 +234,7 @@ Do not treat these as long-term production secrets.
 
 - Approved member photos
 - Real production auth (replace client-side password demo)
-- Payments / invoice section (Jay’s next major area when ready)
+- Deeper payments / invoice integration beyond the Check Invoice link to `https://wegene.pythonanywhere.com/`
 - Live Telegram reminders
 - Optional: refresh `tracker-prototype/README.md` so it matches current rules (quarterly schedule, Confirm + 30-day lock, shared Blobs, no member Pass button)
 - Optional: Netlify Identity / stronger write protection on `/api/tracker-data`

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0fa64f" />
+  <title>Check Invoice — Wegene Family Mahaber</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <section class="login-screen" id="login-screen">
+    <div class="login-card" id="login-card">
+      <img class="site-logo login-logo" src="assets/images/wegene-logo.png" alt="Wegene logo" />
+      <h1>Wegene Family Mahaber</h1>
+      <p>Member-only area. Enter the shared member password to continue.</p>
+      <label for="member-password">Shared member password</label>
+      <input type="password" id="member-password" autocomplete="current-password" />
+      <button type="button" id="login-button">Enter</button>
+      <p class="error" id="login-error" hidden>Incorrect password. Please try again.</p>
+    </div>
+  </section>
+
+  <div id="app-shell" hidden>
+    <div class="menu-bar">
+      <div class="menu-bar-inner">
+        <a class="menu-brand" href="index.html">
+          <img class="menu-logo" src="assets/images/wegene-logo.png" alt="" />
+          <span>Wegene</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">
+          <span class="menu-toggle-bars" aria-hidden="true"></span>
+          <span class="menu-toggle-label">Menu</span>
+        </button>
+        <nav class="site-menu" id="site-menu" aria-label="Main">
+          <a href="index.html">Tracker</a>
+          <a href="invoice.html" class="is-active" aria-current="page">Check Invoice</a>
+          <a href="admin.html">Admin tools</a>
+          <button class="menu-logout" id="logout-button" type="button">Log out</button>
+        </nav>
+      </div>
+    </div>
+
+    <header class="page-header">
+      <div class="page-title-row">
+        <img class="site-logo header-logo" src="assets/images/wegene-logo.png" alt="Wegene logo" />
+        <h1>Check Invoice</h1>
+      </div>
+    </header>
+
+    <main class="stack">
+      <section class="card stack invoice-card">
+        <p class="invoice-lead">Look up your Wegene dues invoice and payment status by phone number on the invoice portal.</p>
+        <a class="invoice-cta" id="invoice-link" href="https://wegene.pythonanywhere.com/" target="_blank" rel="noopener noreferrer">
+          Open Check Invoice
+        </a>
+        <p class="hint">Opens the existing Wegene invoice site in a new tab.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/nav.js"></script>
+  <script>
+    (async function () {
+      const AUTH = window.WegeneAuth;
+      const CONFIG = window.WEGENE_CONFIG || {};
+      const invoiceUrl = CONFIG.invoiceLookupUrl || 'https://wegene.pythonanywhere.com/';
+      const link = document.getElementById('invoice-link');
+      if (link) link.href = invoiceUrl;
+
+      await AUTH.requireGate({
+        mode: 'member',
+        loginScreenId: 'login-screen',
+        appShellId: 'app-shell',
+        passwordInputId: 'member-password',
+        loginButtonId: 'login-button',
+        errorId: 'login-error',
+        unlockName: 'unlockWegeneInvoice'
+      });
+
+      if (window.WegeneMenu) window.WegeneMenu.setupMenu('menu-toggle', 'site-menu');
+      document.getElementById('logout-button')?.addEventListener('click', () => {
+        AUTH.clearSession('member');
+        location.reload();
+      });
+    })();
+  </script>
+</body>
+</html>
